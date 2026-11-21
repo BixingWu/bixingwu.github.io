@@ -9,6 +9,10 @@ target = "static/assets"
 files = ["! fonts/**"]
 
 [[module.mounts]]
+source = "assets"
+target = "assets/assets"
+
+[[module.mounts]]
 source = "style.css"
 target = "assets/style.css"
 

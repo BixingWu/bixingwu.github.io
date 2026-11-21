@@ -39,18 +39,42 @@ let currentLink = links[0];
 let hoverLink = null;
 let destination = null;
 let bottomLink = null;
+let markerLink = null;
 let markerLeft = 0;
+let markerRight = 0;
 
-function positionMarker() {
+function positionMarker(measure = false) {
   const focused = nav.querySelector("a:focus-visible");
   const marker = focused || hoverLink || currentLink;
-  const left = marker.offsetLeft;
-  const right = nav.clientWidth - left - marker.offsetWidth;
-  if (left !== markerLeft) nav.dataset.direction = left < markerLeft ? "back" : "forward";
+  if (marker === markerLink && !measure) return;
+  const track = nav.getBoundingClientRect();
+  if (!track.width) return;
+  const item = marker.getBoundingClientRect();
+  // Relative edges follow the mobile flex track as the header folds.
+  const left = (item.left - track.left) / track.width;
+  const right = (track.right - item.right) / track.width;
+  let direction = left < markerLeft ? "back" : "forward";
+  if (marker === markerLink) {
+    const difference = Math.max(Math.abs(left - markerLeft), Math.abs(right - markerRight));
+    if (difference * track.width < 0.25) return;
+    direction = "align";
+  }
+  if (nav.dataset.direction !== direction) nav.dataset.direction = direction;
+  if (!markerLink || markerLeft !== left) nav.style.setProperty("--mark-left", (left * 100).toFixed(4) + "%");
+  if (!markerLink || markerRight !== right) nav.style.setProperty("--mark-right", (right * 100).toFixed(4) + "%");
+  if (!markerLink) nav.dataset.marker = "";
+  markerLink = marker;
   markerLeft = left;
-  nav.style.setProperty("--mark-left", left + "px");
-  nav.style.setProperty("--mark-right", right + "px");
-  if (!nav.hasAttribute("data-marker")) nav.dataset.marker = "";
+  markerRight = right;
+}
+
+const alignMarker = () => positionMarker(true);
+if ("ResizeObserver" in window) {
+  const markerResize = new ResizeObserver(alignMarker);
+  markerResize.observe(nav);
+  for (const link of links) markerResize.observe(link);
+} else {
+  document.fonts?.addEventListener("loadingdone", alignMarker);
 }
 
 function updateNavigation() {
@@ -97,7 +121,10 @@ function scheduleNavigation() {
   }
 }
 window.addEventListener("scroll", scheduleNavigation, { passive: true });
-window.addEventListener("resize", scheduleNavigation);
+window.addEventListener("resize", () => {
+  alignMarker();
+  scheduleNavigation();
+});
 window.addEventListener("load", scheduleNavigation);
 function followHash() {
   bottomLink = null;
@@ -127,7 +154,7 @@ nav.addEventListener("pointerover", event => {
   positionMarker();
 });
 nav.addEventListener("pointerleave", () => { hoverLink = null; positionMarker(); });
-nav.addEventListener("focusin", positionMarker);
+nav.addEventListener("focusin", () => positionMarker());
 nav.addEventListener("focusout", scheduleNavigation);
 reducedMotion.addEventListener("change", scheduleNavigation);
 followHash();
@@ -178,6 +205,12 @@ if (dialog && typeof dialog.showModal === "function") {
     motion = null;
   }
 
+  function revealOriginal() {
+    image.style.visibility = "";
+    original.style.backgroundImage = "";
+  }
+  image.addEventListener("load", revealOriginal);
+
   function closeFigure() {
     if (!dialog.open || closing) return;
     closing = true;
@@ -210,9 +243,12 @@ if (dialog && typeof dialog.showModal === "function") {
       dialog.removeAttribute("data-closing");
       const thumbnail = link.querySelector("img");
       const thumb = thumbnail.getBoundingClientRect();
-      image.width = thumbnail.naturalWidth || Number(thumbnail.getAttribute("width"));
-      image.height = thumbnail.naturalHeight || Number(thumbnail.getAttribute("height"));
+      image.width = Number(thumbnail.getAttribute("width")) || thumbnail.naturalWidth;
+      image.height = Number(thumbnail.getAttribute("height")) || thumbnail.naturalHeight;
+      original.style.backgroundImage = `url("${thumbnail.currentSrc || thumbnail.src}")`;
+      image.style.visibility = "hidden";
       image.src = link.href;
+      if (image.complete && image.naturalWidth) revealOriginal();
       image.alt = thumbnail.alt;
       original.href = link.href;
       source.href = link.dataset.source;

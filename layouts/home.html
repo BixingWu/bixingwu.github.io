@@ -3,7 +3,7 @@
 <html lang="{{ site.Language.Lang }}">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="color-scheme" content="light dark">
   <script>
     try {
@@ -49,15 +49,30 @@
       </div>
     </div>
   </header>
-  <main id="main">
+  <main id="main" tabindex="-1">
     <section class="cover" id="about" aria-labelledby="profile-heading">
       <div class="wrap cover-inner">
         <div class="identity">
           <h1 id="profile-heading">{{ .Title }}</h1>
-          <p class="role">{{ $profile.role }} at {{ $profile.affiliation }}</p>
+          <p class="role">{{ $profile.role }} <span>at {{ $profile.affiliation }}</span></p>
         </div>
         <div class="portrait-mount">
+          {{ with resources.Get $profile.portrait }}
+          {{ $photo := . }}
+          {{ $preview := .Resize "384x webp q84" }}
+          {{ $large := .Process "webp q86" }}
+          {{ $sources := slice }}
+          {{ range slice 240 384 480 640 }}
+            {{ $scaled := $photo.Resize (printf "%dx webp q84" .) }}
+            {{ $sources = $sources | append (printf "%s %dw" $scaled.RelPermalink $scaled.Width) }}
+          {{ end }}
+          {{ $sources = $sources | append (printf "%s %dw" $large.RelPermalink $large.Width) }}
+          <img class="portrait" src="{{ $preview.RelPermalink }}" srcset="{{ delimit $sources ", " }}"
+               sizes="(max-width: 34rem) 27vw, (max-width: 54rem) 21vw, min(21vw, 19.5rem)"
+               width="{{ .Width }}" height="{{ .Height }}" fetchpriority="high" alt="{{ $profile.portrait_alt }}">
+          {{ else }}
           <img class="portrait" src="{{ $profile.portrait }}" width="880" height="880" fetchpriority="high" alt="{{ $profile.portrait_alt }}">
+          {{ end }}
         </div>
         <div class="research">
           <div class="bio">{{ .Content }}</div>
@@ -74,11 +89,27 @@
         <h2 id="works-heading">Selected publications</h2>
         {{ $hasEqualContribution := false }}
         {{ range .Params.publications }}
+        {{ $preview := .figure }}
+        {{ $sources := slice }}
+        {{ $width := .figure_width }}
+        {{ $height := .figure_height }}
+        {{ with resources.Get .figure }}
+          {{ $original := . }}
+          {{ $width = .Width }}
+          {{ $height = .Height }}
+          {{ range slice 400 800 1200 }}
+            {{ $scaled := $original.Resize (printf "%dx webp q88" .) }}
+            {{ if not $sources }}{{ $preview = $scaled.RelPermalink }}{{ end }}
+            {{ $sources = $sources | append (printf "%s %dw" $scaled.RelPermalink $scaled.Width) }}
+          {{ end }}
+        {{ end }}
         <article class="paper">
           <figure class="paper-visual">
             <figcaption class="venue">{{ .venue }}</figcaption>
             <a href="{{ .figure }}" class="figure-link" data-paper="{{ .short_name }}" data-source="{{ .figure_source }}" aria-label="Open full-size {{ .short_name }} pipeline">
-              <img class="paper-figure" src="{{ .figure }}" width="{{ .figure_width }}" height="{{ .figure_height }}" loading="lazy" alt="{{ .figure_alt }}">
+              <img class="paper-figure" src="{{ $preview }}"
+                   {{ with $sources }}srcset="{{ delimit . ", " }}" sizes="auto, (max-width: 27rem) 92vw, (max-width: 32rem) 37vw, (max-width: 54rem) clamp(13rem, 35vw, 17rem), min(29vw, 19rem)"{{ end }}
+                   width="{{ $width }}" height="{{ $height }}" loading="lazy" decoding="async" alt="{{ .figure_alt }}">
               <svg class="icon enlarge" aria-hidden="true"><use href="#enlarge"/></svg>
             </a>
           </figure>
@@ -111,10 +142,12 @@
             {{ with .logo }}<img src="{{ . }}?v={{ substr (sha256 (readFile .)) 0 12 }}" width="56" height="56" loading="lazy" alt="">{{ end }}
           </span>
           <div class="place-copy">
-            <h3>{{ if .homepage }}<a href="{{ .homepage }}">{{ .institution }}</a>{{ else }}{{ .institution }}{{ end }}</h3>
+            <div class="placement-heading">
+              <h3>{{ if .homepage }}<a href="{{ .homepage }}">{{ .institution }}</a>{{ else }}{{ .institution }}{{ end }}</h3>
+              <p class="dates">{{ .dates }}</p>
+            </div>
             <p>{{ .role }}</p>{{ with .detail }}<p class="detail">{{ . }}</p>{{ end }}
           </div>
-          <p class="dates">{{ .dates }}</p>
         </div>
         {{ end }}
       </section>
