@@ -340,19 +340,19 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
     .slide :is(h1,h2,h3,p,figure,figcaption,ol,dl,dd) { margin: 0; }
     .slide h1, .slide h2, .slide h3 { color: var(--ink); font-weight: 700; line-height: 1.13; text-wrap: balance; }
     .slide h1 { font-size: clamp(2.75rem, 5.15vw, 6.2rem); letter-spacing: -.022em; }
-    .slide h2 { font-size: clamp(2rem, 3.15vw, 3.85rem); letter-spacing: -.018em; }
+    .slide h2 { font-size: clamp(1.85rem, 2.78vw, 3.35rem); letter-spacing: -.018em; }
     .slide h3 { font-size: clamp(1.24rem, 2.1vw, 2.4rem); }
-    .slide p, .slide li, .slide dd { color: var(--muted); font-size: clamp(1.08rem, 2vw, 2.2rem); line-height: 1.42; }
+    .slide p, .slide li, .slide dd { color: var(--muted); font-size: clamp(1.08rem, 2.22vw, 2.65rem); line-height: 1.42; }
     .slide .section-label { color: #b7b7b7; font: 400 clamp(1.35rem, 2.5vw, 3rem)/1.06 "Economica", "Arial Narrow", sans-serif; margin-bottom: .17em; }
     .slide .em-red { color: var(--mark); }
     .slide .em-blue { color: var(--accent); }
     .slide figure img { display: block; width: auto; max-width: 100%; height: auto; max-height: 52vh; object-fit: contain; background: #fff; }
-    .slide figcaption { margin-top: .55rem; color: var(--muted); font: 400 clamp(.95rem, 1.4vw, 1.4rem)/1.38 "Lato", sans-serif; }
+    .slide figcaption { margin-top: .55rem; color: var(--muted); font: 400 clamp(1rem, 2.5vw, 3rem)/1.28 "Lato", sans-serif; }
     .cover { grid-template-columns: minmax(0,1.4fr) minmax(0,.6fr); align-content: center; align-items: center; padding-inline: max(var(--edge), 6vw); }
     .cover .report-kind { color: #999; font: 400 clamp(1.65rem, 4.05vw, 4.8rem)/1.13 "Lato", sans-serif; margin-bottom: .15em; }
-    .cover .byline { margin-top: clamp(1.9rem, 7.5vh, 5.6rem); color: var(--ink); font-family: "Lato", sans-serif; }
+    .cover .byline { margin-top: clamp(1.9rem, 7.5vh, 5.6rem); color: var(--ink); font: 400 clamp(1.15rem, 2.78vw, 3.35rem)/1.2 "Lato", sans-serif; }
     .byline span { display: block; }
-    .byline span + span { margin-top: .2em; font-size: .85em; }
+    .byline span + span { margin-top: .2em; font: 400 .75em/1.3 "Open Sans", sans-serif; }
     .cover-graphic { justify-self: center; width: min(84%, 22rem); color: var(--ink); }
     .slide-figure { width: 100%; height: auto; display: block; overflow: visible; }
     .trajectory-list { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); }
@@ -360,26 +360,24 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
     .trajectory-list li:first-child { padding-inline-start: 0; }
     .trajectory-list li + li { border-inline-start: 1px dashed #b7b7b7; }
     .trajectory-list h3 { margin-bottom: .48em; }
-    .trajectory-list p, .evidence-layout aside p { color: var(--muted); }
-    .evidence-layout { display: grid; grid-template-columns: minmax(0,1.6fr) minmax(0,.8fr); gap: clamp(1.35rem, 4vw, 5rem); align-items: center; }
-    .evidence-layout > * { min-width: 0; }
-    .evidence-layout .result-value { display: block; font-size: clamp(2.5rem, 4.7vw, 5.1rem); line-height: 1.06; font-weight: 700; color: var(--accent); font-variant-numeric: lining-nums; }
-    .evidence-layout aside h3 { margin: .35em 0 .6em; }
+    .trajectory-list :is(h3,p) { font-family: "Lato", sans-serif; }
+    .comparison-plots { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: clamp(1rem, 2.5vw, 3rem); max-width: 70rem; }
     .plot { color: var(--ink); font: 18px "Lato", -apple-system, sans-serif; }
-    .plot .guide, .cover-graphic .guide { stroke: var(--line); }
-    .plot .signal, .cover-graphic .signal { fill: none; stroke: var(--ink); stroke-linejoin: round; stroke-linecap: round; }
-    .plot .observed, .cover-graphic .observed { fill: var(--guide); stroke: var(--page); }
+    .cover-graphic .guide { stroke: var(--line); }
+    .cover-graphic .signal { fill: none; stroke: var(--ink); stroke-linejoin: round; stroke-linecap: round; }
+    .plot .observed { fill: var(--guide); stroke: var(--page); }
+    .cover-graphic .observed { fill: var(--ink); stroke: var(--page); }
     .plot text { fill: currentColor; }
-    .plot .peak-note { fill: var(--mark); font-weight: 700; }
-    .plot .sample-note { fill: var(--accent); }
-    .experiment-plan { max-width: 70rem; }
-    .experiment-plan > div { display: grid; grid-template-columns: minmax(8rem,.37fr) 1fr; gap: 1rem; padding-block: .85rem; border-top: 1px solid var(--line); }
-    .experiment-plan dt { font-size: clamp(1.02rem, 1.56vw, 1.4rem); font-weight: 650; color: var(--accent); }
+    .method-figure { width: min(100%, 60rem); }
+    .method-figure text { fill: var(--ink); font: 17px "Lato", sans-serif; }
+    .method-figure .cell { fill: var(--wash); stroke: var(--guide); }
+    .method-figure .process { fill: #eee; stroke: #929292; }
+    .method-figure .pointer { fill: none; stroke: #666; stroke-width: 1.2; }
     .presenting .slide:not(.cover) { grid-template-rows: auto minmax(min-content,1fr); align-content: stretch; }
     .presenting .slide:not(.cover) > :nth-child(2) { align-self: start; }
-    .presenting .trajectory-list, .presenting .experiment-plan { margin-top: clamp(.35rem, 2.8vh, 2rem); }
+    .presenting .trajectory-list { margin-top: clamp(.35rem, 2.8vh, 2rem); }
     body.presenting { height: 100vh; height: 100dvh; display: grid; grid-template-rows: minmax(0, 1fr) auto; }
-    .presenting main { overflow-y: auto; }
+    .presenting main { overflow-y: auto; container-type: size; }
     .presenting .slide { min-height: 100%; border: 0; }
     .deck-tools {
       display: flex; align-items: center; gap: .45rem;
@@ -392,6 +390,11 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
     .deck-tools button:hover:enabled, .deck-tools button:focus-visible { background: var(--wash); }
     .deck-tools button:focus-visible { outline: 2px solid currentColor; outline-offset: -2px; }
     .deck-tools button:disabled { opacity: .35; cursor: default; }
+    @media (min-width: 43.01rem) and (min-height: 30.01rem) {
+      .presenting .cover { align-content: start; align-items: start; padding-block-start: 38cqh; }
+      .presenting .cover .byline { margin-top: 7cqh; }
+      .presenting .cover-graphic { margin-top: -7cqh; }
+    }
     @media (max-width: 43rem) {
       .slide { gap: 1.3rem; padding-block: clamp(1.3rem, 4.2vh, 2.25rem); }
       .slide .section-label { color: #737373; }
@@ -402,10 +405,8 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
       .trajectory-list li + li { padding-top: .95rem; border-inline-start: 0; border-top: 1px dashed #b7b7b7; }
       .trajectory-list li:last-child { padding-bottom: 0; }
       .trajectory-list h3 { margin-bottom: .22em; }
-      .evidence-layout { grid-template-columns: minmax(0,1fr); gap: 1.3rem; }
-      .evidence-layout aside h3 { margin: .22em 0 .3em; }
+      .comparison-plots { grid-template-columns: minmax(0,1fr); }
       .plot { font-size: 22px; }
-      .experiment-plan > div { grid-template-columns: minmax(0,1fr); gap: .12rem; }
       .deck-tools { gap: .12rem; font-size: .875rem; }
       #deck-name { display: none; }
     }
@@ -419,9 +420,11 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
       .cover .byline { margin-top: 1rem; }
       .slide-figure { max-height: 39vh; }
       .slide figcaption { margin-top: .28rem; font-size: .82rem; }
-      .evidence-layout .result-value { font-size: clamp(2rem, 4.2vw, 3rem); }
-      .evidence-layout aside h3 { margin: .18em 0 .25em; }
-      .experiment-plan > div { padding-block: .42rem; }
+    }
+    @media (max-width: 22rem) and (max-height: 39rem) {
+      .slide.evidence { padding-block: .65rem; gap: .65rem; }
+      .comparison-plots { gap: .55rem; }
+      .comparison-plots figcaption { margin-top: .15rem; }
     }
     @media (min-width: 34rem) and (max-width: 43rem) and (orientation: landscape) and (max-height: 30rem) {
       .cover { grid-template-columns: minmax(0,1.35fr) minmax(0,.65fr); }
@@ -430,8 +433,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
       .trajectory-list li, .trajectory-list li + li { padding: 0 .65rem; border: 0; }
       .trajectory-list li:first-child { padding-inline-start: 0; }
       .trajectory-list li + li { border-inline-start: 1px dashed #b7b7b7; }
-      .evidence-layout { grid-template-columns: minmax(0,1.4fr) minmax(0,1fr); gap: .85rem; }
-      .experiment-plan > div { grid-template-columns: 6rem minmax(0,1fr); gap: .65rem; }
+      .comparison-plots { grid-template-columns: repeat(2,minmax(0,1fr)); gap: .7rem; }
     }
     @media (prefers-reduced-motion: no-preference) {
       .presenting .slide.showing > .slide-heading { animation: page-in .2s ease-out; }
@@ -469,46 +471,55 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
         <li><h3>Compare the peaks</h3><p>Measure the gap between the true maximum and the largest sample.</p></li>
       </ol>
     </section>
-    <section class="slide evidence" data-slide-title="Observed peak">
+    <section class="slide evidence" data-slide-title="Comparing sampling grids">
       <header class="slide-heading">
-        <p class="section-label">Evidence</p>
-        <h2>The peak falls <span class="em-red">between samples</span></h2>
+        <p class="section-label">Experiments</p>
+        <h2>Sampling grid offset</h2>
       </header>
-      <div class="evidence-layout">
+      <div class="comparison-plots">
         <figure>
-          <!-- An offline image can replace this SVG: <img src="data:image/png;base64,BASE64" alt="Describe the figure"> -->
-          <svg class="slide-figure plot" viewBox="0 0 615 275" role="img" aria-label="The triangular signal rises from zero to one at time 3 and returns to zero at time 6. Sampling at times 2 and 4 gives two thirds at both times.">
-            <text x="14" y="24">Amplitude</text>
-            <g class="guide" fill="none" stroke-width="1.4"><path d="M77 52V216H547"/><path d="M77 110H547" stroke-dasharray="4 6"/></g>
-            <g text-anchor="end"><text x="64" y="61">1</text><text x="64" y="116">⅔</text><text x="64" y="222">0</text></g>
-            <path class="signal" d="M77 216L311 57L545 216" stroke-width="3.5"/>
-            <g class="observed" stroke-width="2.4"><circle cx="77" cy="216" r="6.8"/><circle cx="233" cy="110" r="6.8"/><circle cx="389" cy="110" r="6.8"/><circle cx="545" cy="216" r="6.8"/></g>
-            <path d="M317 51L338 30H350" fill="none" stroke="var(--mark)" stroke-width="1.8"/>
-            <text class="peak-note" x="357" y="34">True peak</text>
-            <path d="M398 107L415 90H428" fill="none" stroke="var(--guide)" stroke-width="1.6"/>
-            <text class="sample-note" x="436" y="94">Sample</text>
-            <g text-anchor="middle"><text x="77" y="245">0</text><text x="233" y="245">2</text><text x="311" y="245">3</text><text x="389" y="245">4</text><text x="545" y="245">6</text></g>
-            <text x="545" y="270" text-anchor="end">Time</text>
+          <!-- Replace each example with an original plot at its natural aspect ratio, e.g. <img src="data:image/png;base64,BASE64" alt="Describe this plot">. -->
+          <svg class="slide-figure plot" viewBox="0 0 440 210" role="img" aria-label="Even sampling times. The blue dots at times 2 and 4 reach two thirds of the signal peak.">
+            <g id="sampling-axes">
+              <text x="5" y="20">Amplitude</text>
+              <g fill="none" stroke="#d9d9d9"><path d="M42 35V159H409"/><path d="M42 77H407" stroke-dasharray="4 5"/></g>
+              <g text-anchor="end"><text x="31" y="40">1</text><text x="31" y="83">⅔</text><text x="31" y="164">0</text></g>
+              <path d="M45 159L225 36L405 159" fill="none" stroke="#000" stroke-width="2.4" stroke-linejoin="round"/>
+              <g text-anchor="middle"><text x="45" y="182">0</text><text x="105" y="182">1</text><text x="165" y="182">2</text><text x="225" y="182">3</text><text x="285" y="182">4</text><text x="345" y="182">5</text><text x="405" y="182">6</text></g>
+              <text x="405" y="205" text-anchor="end">Time</text>
+            </g>
+            <g class="observed" stroke-width="1.5"><circle cx="45" cy="159" r="4.5"/><circle cx="165" cy="77" r="4.5"/><circle cx="285" cy="77" r="4.5"/><circle cx="405" cy="159" r="4.5"/></g>
           </svg>
-          <figcaption>Line shows the constructed signal. Dots mark observations.</figcaption>
+          <figcaption>Even times. Samples at 2 and 4 reach <span class="em-red">⅔ of the peak</span>.</figcaption>
         </figure>
-        <aside aria-label="Figure interpretation">
-          <strong class="result-value">⅔</strong>
-          <h3>Highest observed value</h3>
-          <p>Both nearest samples fall one time unit from the peak.</p>
-        </aside>
+        <figure>
+          <svg class="slide-figure plot" viewBox="0 0 440 210" role="img" aria-label="Odd sampling times. The blue sample at time 3 coincides with the signal peak of one.">
+            <use href="#sampling-axes"/>
+            <g class="observed" stroke-width="1.5"><circle cx="105" cy="118" r="4.5"/><circle cx="225" cy="36" r="4.5"/><circle cx="345" cy="118" r="4.5"/></g>
+          </svg>
+          <figcaption>Odd times. The sample at 3 reaches <span class="em-blue">the peak of 1</span>.</figcaption>
+        </figure>
       </div>
     </section>
-    <section class="slide next-step" data-slide-title="Next experiment">
+    <section class="slide method" data-slide-title="Sampling procedure">
       <header class="slide-heading">
-        <p class="section-label">Next experiment</p>
-        <h2>Shift the <span class="em-blue">observation times</span></h2>
+        <p class="section-label">Design</p>
+        <h2>How the shifted grid samples the pulse</h2>
       </header>
-      <dl class="experiment-plan">
-        <div><dt>Change</dt><dd>Move the first observation from time 0 to time 1.</dd></div>
-        <div><dt>Hold fixed</dt><dd>Keep the same pulse and two-unit sampling interval.</dd></div>
-        <div><dt>Measure</dt><dd>Compare the largest value observed on each grid.</dd></div>
-      </dl>
+      <figure class="method-figure">
+        <svg class="slide-figure" viewBox="0 0 510 160" role="img" aria-label="Sampling times 1, 3 and 5 yield amplitudes of one third, one and one third.">
+          <text x="0" y="29">Time</text>
+          <g class="cell"><rect x="109" y="8" width="88" height="30"/><rect x="234" y="8" width="88" height="30"/><rect x="359" y="8" width="88" height="30"/></g>
+          <g text-anchor="middle"><text x="153" y="29">1</text><text x="278" y="29">3</text><text x="403" y="29">5</text></g>
+          <g class="pointer"><path d="M153 39V57m125-18v18m125-18v18"/></g>
+          <rect class="process" x="101" y="57" width="354" height="32" rx="2"/>
+          <text x="278" y="79" text-anchor="middle">Evaluate the triangular pulse</text>
+          <g class="pointer"><path d="M153 90v28m-4-5 4 5 4-5m121-23v28m-4-5 4 5 4-5m121-23v28m-4-5 4 5 4-5"/></g>
+          <text x="0" y="143">Amplitude</text>
+          <g text-anchor="middle"><text x="153" y="143">⅓</text><text x="278" y="143">1</text><text x="403" y="143">⅓</text></g>
+        </svg>
+        <figcaption>Only the grid offset changes. The signal and the two-unit interval stay fixed.</figcaption>
+      </figure>
     </section>
     <!-- deck-slides:end -->
   </main>
