@@ -1,12 +1,16 @@
 /* LaTeXML's semantic classes come from the published paper. */
 .paper-body .ltx_title { color: var(--ink); font-family: var(--display-face, system-ui); line-height: 1.25; text-align: start; }
-.paper-body :is(.ltx_title_section, .ltx_title_appendix, .ltx_title_bibliography) { margin: 2.7rem 0 .9rem; font-size: clamp(1.45rem, 2.2vw, 1.85rem); letter-spacing: -.025em; }
-.paper-body :is(.ltx_title_subsection, .ltx_title_subsubsection, .ltx_title_paragraph) { margin: 1.55rem 0 .5rem; font-size: 1.18em; letter-spacing: -.012em; }
+.paper-body :is(.ltx_title_section, .ltx_title_appendix, .ltx_title_bibliography), .paper-native > h2 { margin: 2.7rem 0 .9rem; font-size: clamp(1.45rem, 2.2vw, 1.85rem); letter-spacing: -.025em; }
+.paper-body :is(.ltx_title_subsection, .ltx_title_subsubsection, .ltx_title_paragraph), .paper-native > h3 { margin: 1.55rem 0 .5rem; font-size: 1.18em; letter-spacing: -.012em; }
 .paper-body :is(.ltx_title_subsubsection, .ltx_title_paragraph, .ltx_runin) { font-size: 1em; }
 .paper-body .ltx_runin { margin: 1.1em 0 .25em; }
 .paper-body .ltx_title > .ltx_tag { margin-inline-end: .24em; }
 .paper-body .ltx_title_abstract { margin: 0 0 .6rem; font-size: 1.35rem; }
-.paper-body .ltx_p { margin: .66em 0; }
+.paper-body .ltx_p, .paper-native > p { margin: .66em 0; }
+.paper-native > h2:first-child { margin-top: 0; }
+.paper-native img { max-width: 100%; height: auto; }
+.paper-native > table { display: block; max-width: 100%; overflow-x: auto; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.paper-native > table :is(th, td) { padding: .35em .6em; border-bottom: 1px solid var(--rule); }
 .paper-body .ltx_p:has(math), .paper-body .ltx_listingline { overflow-x: auto; }
 .paper-body .ltx_ref { overflow-wrap: anywhere; }
 .paper-body cite { font-style: normal; white-space: nowrap; }

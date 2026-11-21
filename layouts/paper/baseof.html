@@ -1,8 +1,9 @@
 {{- $paper := dict -}}
 {{- $title := .Title -}}
 {{- if .IsPage -}}
-  {{- $paper = index (where site.Home.Params.publications "short_name" .Title) 0 -}}
-  {{- $title = $paper.title -}}
+  {{- with where (partialCached "publications.html" site.Home) "page_path" .Path -}}
+    {{- $paper = index . 0 -}}{{- $title = $paper.title -}}
+  {{- else -}}{{- errorf "%s: missing publication metadata. See tools/papers.md" $.Path -}}{{- end -}}
 {{- end -}}
 <!doctype html>
 <html lang="en">
@@ -28,7 +29,7 @@
   <meta property="og:image:alt" content="{{ .figure_alt }}">
   <meta name="citation_title" content="{{ .title }}">
   {{ range .authors }}<meta name="citation_author" content="{{ strings.TrimSuffix "*" . }}">{{ end }}
-  <meta name="citation_pdf_url" content="{{ replace $.Params.source_html "/html/" "/pdf/" }}">
+  {{ with .reader_pdf }}<meta name="citation_pdf_url" content="{{ . | absURL }}">{{ end }}
   {{ end }}
   <link rel="icon" href="{{ "assets/icon.png" | relURL }}" type="image/png">
   {{ with resources.Get "style.css" | fingerprint }}<link rel="stylesheet" href="{{ .RelPermalink }}">{{ end }}
@@ -48,7 +49,7 @@
         <a class="reader-home" href="{{ site.Home.RelPermalink }}">{{ site.Title }}</a>
         <span aria-hidden="true">/</span>
         <a href="{{ (site.GetPage "/paper").RelPermalink }}"{{ if .IsSection }} aria-current="page"{{ end }}>Papers</a>
-        {{ if .IsPage }}<span aria-hidden="true">/</span><span aria-current="page">{{ .Title }}</span>{{ end }}
+        {{ if .IsPage }}<span aria-hidden="true">/</span><span aria-current="page">{{ $paper.short_name }}</span>{{ end }}
       </div>
       <button id="theme-toggle" type="button" hidden aria-label="Switch appearance" title="Switch appearance"><svg class="icon" aria-hidden="true"><use href="#moon"/></svg></button>
     </div>

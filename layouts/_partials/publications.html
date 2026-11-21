@@ -1,0 +1,56 @@
+{{- $papers := slice -}}
+{{- $names := collections.NewScratch -}}
+{{- with site.GetPage "/paper" -}}
+  {{- range .RegularPages.ByDate.Reverse -}}
+    {{- $page := . -}}
+    {{- with .Params.publication -}}
+      {{- $record := . -}}
+      {{- $key := $record.short_name | default "" | urlize -}}
+      {{- if or (not $page.Title) (not $key) (not $record.authors) (not $record.venue) (not $record.figure_alt) -}}
+        {{- errorf "%s: publication needs title, short_name, authors, venue and figure_alt" $page.Path -}}
+      {{- end -}}
+      {{- with $page.Params.byline_marks -}}{{- if ne (len .) (len $record.authors) -}}{{- errorf "%s: provide one byline_marks entry per author" $page.Path -}}{{- end -}}{{- end -}}
+      {{- if $names.Get $key -}}{{- errorf "%s: duplicate publication short_name %q" $page.Path $record.short_name -}}{{- end -}}
+      {{- $names.Set $key true -}}
+      {{- $figure := $page.Resources.Get ($record.figure | default "pipeline.png") -}}
+      {{- $bib := $page.Resources.Get ($record.bibtex | default "citation.bib") -}}
+      {{- if not $figure -}}{{- errorf "%s: missing pipeline image %q" $page.Path ($record.figure | default "pipeline.png") -}}{{- end -}}
+      {{- with $figure -}}{{- if not (in (slice "image/png" "image/jpeg" "image/webp") .MediaType.Type) -}}{{- errorf "%s: supply a PNG, JPEG or WebP pipeline preview for responsive rendering" $page.Path -}}{{- end -}}{{- end -}}
+      {{- if not $bib -}}{{- errorf "%s: missing BibTeX file %q" $page.Path ($record.bibtex | default "citation.bib") -}}{{- end -}}
+      {{- if and $figure $bib -}}
+        {{- $figureSource := $record.figure_source | default $page.RelPermalink -}}
+        {{- with $page.Params.overview_id -}}{{- $figureSource = $record.figure_source | default (printf "%s#%s" $page.RelPermalink .) -}}{{- end -}}
+        {{- $pdf := $record.pdf -}}
+        {{- with $pdf -}}
+          {{- if not (urls.Parse .).IsAbs -}}
+            {{- with $page.Resources.Get . -}}{{- $pdf = .RelPermalink -}}{{- else -}}{{- errorf "%s: missing bundled PDF %q" $page.Path $pdf -}}{{- end -}}
+          {{- end -}}
+        {{- end -}}
+        {{- $paper := merge $record (dict "page" $page "page_path" $page.Path "title" $page.Title "image" $figure "figure" $figure.RelPermalink "figure_source" $figureSource "citation" $bib "bibtex" $bib.RelPermalink "pdf" $pdf "reader_pdf" $pdf "source_url" $record.url "source_label" ($record.source_label | default "Original")) -}}
+        {{- $papers = $papers | append $paper -}}
+      {{- end -}}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
+{{- range site.Home.Params.publications -}}
+  {{- $page := site.GetPage (printf "/paper/%s" (.short_name | urlize)) -}}
+  {{- if not (and $page $page.Params.publication) -}}
+    {{- $key := .short_name | urlize -}}
+    {{- if $names.Get $key -}}{{- errorf "Duplicate publication short_name %q in content/_index.md and /paper/" .short_name -}}{{- end -}}
+    {{- $names.Set $key true -}}
+    {{- $source := .url -}}
+    {{- $pdf := .pdf -}}
+    {{- $path := "" -}}
+    {{- with $page -}}
+      {{- $path = .Path -}}
+      {{- with .Params.source_html -}}
+        {{- $source = replace . "/html/" "/abs/" -}}
+        {{- $pdf = replace . "/html/" "/pdf/" -}}
+      {{- end -}}
+    {{- end -}}
+    {{- $paper := merge . (dict "page" $page "page_path" $path "image" (resources.Get .figure) "reader_pdf" $pdf "source_url" $source "source_label" "arXiv") -}}
+    {{- with .bibtex -}}{{- $paper = merge $paper (dict "citation" (resources.Get .)) -}}{{- end -}}
+    {{- $papers = $papers | append $paper -}}
+  {{- end -}}
+{{- end -}}
+{{- return $papers -}}

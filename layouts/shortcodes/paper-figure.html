@@ -1,0 +1,11 @@
+{{- $src := .Get "src" -}}
+{{- $alt := .Get "alt" -}}
+{{- if not $alt -}}{{- errorf "%s: paper-figure needs an alt description" .Position -}}{{- end -}}
+{{- with .Page.Resources.Get $src }}
+<figure{{ with $.Get "id" }} id="{{ . }}"{{ end }}>
+  <a href="{{ .RelPermalink }}" data-figure-zoom aria-label="Enlarge figure">
+    <img class="ltx_graphics" src="{{ .RelPermalink }}" alt="{{ $alt }}" loading="lazy" decoding="async">
+  </a>
+  {{ with $.Get "caption" }}<figcaption class="ltx_caption">{{ . }}</figcaption>{{ end }}
+</figure>
+{{- else -}}{{- errorf "%s: missing bundled figure %q" .Position $src -}}{{- end -}}

@@ -90,13 +90,13 @@
       <section class="works" id="publications" aria-labelledby="works-heading">
         <h2 id="works-heading">Selected publications</h2>
         {{ $hasEqualContribution := false }}
-        {{ range .Params.publications }}
-        {{ $webPaper := site.GetPage (printf "/paper/%s" (.short_name | urlize)) }}
+        {{ range partialCached "publications.html" site.Home }}
+        {{ $webPaper := .page }}
         {{ $preview := .figure }}
         {{ $sources := slice }}
         {{ $width := .figure_width }}
         {{ $height := .figure_height }}
-        {{ with resources.Get .figure }}
+        {{ with .image }}
           {{ $original := . }}
           {{ $width = .Width }}
           {{ $height = .Height }}

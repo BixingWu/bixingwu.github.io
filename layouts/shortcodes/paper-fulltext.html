@@ -1,0 +1,2 @@
+{{- $body := printf "assets/papers/%s/body.html" .Page.File.ContentBaseName -}}
+{{- with resources.Get $body -}}{{- .Content | safeHTML -}}{{- else -}}{{- errorf "%s: missing reviewed HTML fragment %s" .Position $body -}}{{- end -}}

@@ -1,8 +1,27 @@
 {{ define "main" }}
-{{- $paper := index (where site.Home.Params.publications "short_name" .Title) 0 -}}
-{{- $assetDir := printf "assets/papers/%s" (.Title | urlize) -}}
+{{- $paper := index (where (partialCached "publications.html" site.Home) "page_path" .Path) 0 -}}
+{{- $assetDir := printf "assets/papers/%s" .File.ContentBaseName -}}
 {{- $contents := slice -}}
-{{- with resources.Get (printf "%s/contents.json" $assetDir) }}{{ $contents = .Content | transform.Unmarshal }}{{ else }}{{ errorf "Missing contents for %s" $.Title }}{{ end -}}
+{{- if .Params.contents -}}
+  {{- $contents = .Params.contents -}}
+{{- else if or (not .Params.publication) (.HasShortcode "paper-fulltext") -}}
+  {{- with resources.Get (printf "%s/contents.json" $assetDir) -}}
+    {{- $contents = .Content | transform.Unmarshal -}}
+  {{- else -}}
+    {{- errorf "%s: missing contents.json. Run python3 tools/paper-contents.py %s/body.html or specify params.contents" .Path $assetDir -}}
+  {{- end -}}
+{{- else -}}
+  {{- range .Fragments.Headings -}}{{- range .Headings -}}
+    {{- $contents = $contents | append (dict "id" .ID "title" (.Title | plainify | htmlUnescape)) -}}
+  {{- end -}}{{- end -}}
+{{- end -}}
+{{- $titles := collections.NewScratch -}}
+{{- if not .Params.contents -}}
+  {{- range .Params.contents_titles -}}
+    {{- if not (where $contents "id" .id) -}}{{- errorf "%s: contents_titles refers to unknown heading %q" $.Path .id -}}{{- end -}}
+    {{- $titles.Set .id .title -}}
+  {{- end -}}
+{{- end -}}
 <main id="main" class="reader-width" tabindex="-1">
   <header class="paper-lead">
     <p class="paper-eyebrow"><span>{{ $paper.venue }}</span><span>{{ $paper.short_name }}</span></p>
@@ -10,14 +29,14 @@
     <p class="paper-byline">
       {{- range $i, $author := $paper.authors -}}
       {{- $name := strings.TrimSuffix "*" $author -}}
-      <span>{{ if eq $name site.Title }}<strong>{{ $name }}</strong>{{ else }}{{ $name }}{{ end }}<sup>{{ index $.Params.byline_marks $i }}</sup></span>
+      <span>{{ if eq $name site.Title }}<strong>{{ $name }}</strong>{{ else }}{{ $name }}{{ end }}{{ with $.Params.byline_marks }}{{ with index . $i }}<sup>{{ . }}</sup>{{ end }}{{ else }}{{ if strings.HasSuffix $author "*" }}<sup>*</sup>{{ end }}{{ end }}</span>
       {{ end -}}
     </p>
-    <p class="paper-affiliations">{{ range $i, $name := .Params.affiliations }}<span><sup>{{ add $i 1 }}</sup> {{ $name }}</span> {{ end }}</p>
-    <p class="author-note">{{ .Params.author_note }}</p>
+    {{ with .Params.affiliations }}<p class="paper-affiliations">{{ range $i, $name := . }}<span><sup>{{ add $i 1 }}</sup> {{ $name }}</span> {{ end }}</p>{{ end }}
+    {{ with .Params.author_note }}<p class="author-note">{{ . }}</p>{{ end }}
     <div class="reader-resources" role="group" aria-label="Paper resources">
-      <a href="{{ replace .Params.source_html "/html/" "/pdf/" }}">PDF</a>
-      <a href="{{ replace .Params.source_html "/html/" "/abs/" }}">arXiv</a>
+      {{ with $paper.reader_pdf }}<a href="{{ . }}">PDF</a>{{ end }}
+      {{ with $paper.source_url }}<a href="{{ . }}">{{ $paper.source_label }}</a>{{ end }}
       {{ with $paper.code }}<a href="{{ . }}">Code</a>{{ end }}
       <a href="#cite">Cite</a>
     </div>
@@ -29,11 +48,11 @@
         <ol>
           {{ $appendices := slice }}
           {{ range $contents }}
-            {{ if strings.HasPrefix .id "A" }}{{ $appendices = $appendices | append . }}{{ else }}<li><a href="#{{ .id }}">{{ .title }}</a></li>{{ end }}
+            {{ if or .appendix (and (not $.Params.publication) (strings.HasPrefix .id "A")) (strings.HasPrefix .id "appendix-") }}{{ $appendices = $appendices | append . }}{{ else }}<li><a href="#{{ .id }}">{{ ($titles.Get .id) | default .title }}</a></li>{{ end }}
           {{ end }}
           {{ with $appendices }}
           <li><details class="contents-appendices"><summary>Appendices</summary><ul>
-            {{ range . }}<li><a href="#{{ .id }}">{{ strings.TrimPrefix "Appendix " .title }}</a></li>{{ end }}
+            {{ range . }}<li><a href="#{{ .id }}">{{ strings.TrimPrefix "Appendix " (($titles.Get .id) | default .title) }}</a></li>{{ end }}
           </ul></details></li>
           {{ end }}
           <li><a href="#cite">Cite this paper</a></li>
@@ -42,14 +61,14 @@
     </aside>
     <div class="reader-article">
       <figure class="overview-figure">
-        {{ with resources.Get $paper.figure }}
+        {{ with $paper.image }}
         {{ $small := .Resize "800x webp q88" }}{{ $large := .Resize "1440x webp q90" }}
         <a href="{{ $paper.figure | relURL }}" data-figure-zoom aria-label="Enlarge {{ $paper.short_name }} method overview"><img src="{{ $small.RelPermalink }}" srcset="{{ $small.RelPermalink }} {{ $small.Width }}w, {{ $large.RelPermalink }} {{ $large.Width }}w" sizes="(max-width: 54rem) 94vw, 46rem" width="{{ .Width }}" height="{{ .Height }}" alt="{{ $paper.figure_alt }}"></a>
         {{ end }}
-        <figcaption><span>{{ $paper.short_name }} method overview</span><a href="#{{ .Params.overview_id }}">View in context</a></figcaption>
+        <figcaption><span>{{ $paper.short_name }} method overview</span>{{ with .Params.overview_id }}<a href="#{{ . }}">View in context</a>{{ end }}</figcaption>
       </figure>
-      <article class="paper-body" aria-label="{{ $paper.short_name }} full text">
-        {{ with resources.Get (printf "%s/body.html" $assetDir) }}{{ .Content | safeHTML }}{{ else }}{{ errorf "Missing full text for %s" $.Title }}{{ end }}
+      <article class="paper-body{{ if .Params.publication }} paper-native{{ end }}" aria-label="{{ $paper.short_name }} full text">
+        {{ if .Params.publication }}{{ .Content }}{{ else }}{{ with resources.Get (printf "%s/body.html" $assetDir) }}{{ .Content | safeHTML }}{{ else }}{{ errorf "Missing full text for %s" $.Title }}{{ end }}{{ end }}
       </article>
       <section id="cite" class="paper-citation" aria-labelledby="cite-heading">
         <h2 id="cite-heading">Cite this paper</h2>
@@ -57,10 +76,10 @@
           <a href="{{ $paper.bibtex | relURL }}" download>Download BibTeX</a>
           <button id="copy-bibtex" type="button" hidden>Copy BibTeX</button>
         </div>
-        {{ with resources.Get $paper.bibtex }}<pre id="paper-bibtex"><code>{{ strings.TrimSpace .Content }}</code></pre>{{ end }}
+        {{ with $paper.citation }}<pre id="paper-bibtex"><code>{{ strings.TrimSpace .Content }}</code></pre>{{ end }}
       </section>
       <footer class="reader-footer">
-        <p>Web edition of <a href="{{ .Params.source_html }}">{{ .Params.version }}</a>.{{ with .Params.license_url }} <a href="{{ . }}">{{ $.Params.license_name }}</a>.{{ end }}</p>
+        {{ with .Params.version }}<p>Web edition of {{ with $.Params.source_html | default $paper.source_url }}<a href="{{ . }}">{{ $.Params.version }}</a>{{ else }}{{ . }}{{ end }}.{{ with $.Params.license_url }} <a href="{{ . }}">{{ $.Params.license_name }}</a>.{{ end }}</p>{{ end }}
         <a href="#main">Back to top</a>
       </footer>
     </div>

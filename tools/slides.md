@@ -4,7 +4,34 @@
 
 ## 制作一份报告
 
-在网站仓库外准备正文片段、图表与项目样式。使用个人组会 Skill 的 `scripts/build_deck.py` 组装单文件 HTML，脚本在本机渲染每页缩略图。也可从 `tools/slides-template.html` 制作。图片、字体、音视频、CSS 和脚本都应内嵌。先在电脑和手机上试讲，检查图表、页码和相应的笔记栏。
+在网站仓库外保存本场材料。可以把几页写在同一 HTML 文件，也可以用 `slides/01-method.html`、`slides/02-result.html` 这样的文件名编排。每页是一个 `<section class="slide">`。正文题名写在 `h1` 或 `h2` 中，侧栏默认沿用该题名，需要短名称时加 `data-slide-title`。看[可编辑的 HuPER 示例](meeting/huper-example.html)可以直接找到方法图、双图和表格的写法。
+
+从网站仓库运行下面的命令。输入目录中的 `.html` 按文件名排序。输出放在源页目录外，后续增加或修改某一页可以重复使用同一命令。
+
+```sh
+python3 "tools/meeting/build_deck.py" --title "Ocula · Research meeting" \
+  --slides "/private/work/Ocula/slides" --output "/private/work/Ocula/report.html"
+```
+
+图片、GIF、视频、poster、字幕与音频可在源 HTML 中使用普通相对路径。脚本按各片段的目录查找这些文件，打包时内嵌，并生成逐页缩略图。显式排序可重复传 `--slides`。本场的额外样式可用 `--css`，其中用到的字体、背景图等资源应自行内嵌。需要重做证据页时修改源 HTML并重新组装。成品保留同一套翻页、预览与 Notes。
+
+例如，先用仓库里的公开样稿熟悉操作。输出位置可换成本场私有目录。
+
+```sh
+python3 "tools/meeting/build_deck.py" --title "HuPER · Paper discussion" \
+  --slides "tools/meeting/huper-example.html" --output "../meeting-work/HuPER-example.html"
+```
+
+带缩略图的构建使用 Node.js 和 Playwright，优先用本机 Chrome。若沙箱拦截启动，可允许此次本机渲染后重跑原命令。快速文字预览可加 `--no-previews`。先在电脑和手机上试讲，核对实际数字、图轴、标题和逐页笔记。演示中播放的短片保留原始时间、条件和播放控件。
+
+比如汇报同一实验的连续轨迹，可以把证据框中的图片换成下面这段。海报会出现在静止画面和缩略图中。离开该页后，正在播放的短片会暂停。
+
+```html
+<video controls playsinline preload="metadata" poster="../media/trajectory-frame.png"
+       aria-label="Tracked trajectory over the evaluation window">
+  <source src="../media/trajectory.mp4" type="video/mp4">
+</video>
+```
 
 ## 选择发布方式
 
@@ -16,7 +43,7 @@
 node tools/seal-slides.mjs --project Ocula "/private/work/report.html"
 ```
 
-**修订同一场报告**时，沿用原链接、口令和逐页备注。打包器先用保存的链接核验旧报告，然后原子替换密文。备注按页号对应，润色时请保留原页序。
+**修订或续讲同一份报告**时，沿用原链接、口令和逐页备注。打包器先用保存的链接核验旧报告，然后原子替换密文。备注按页号对应，润色时请保留原页序。续讲时把新证据页排到末尾。
 
 ```sh
 node tools/seal-slides.mjs --project Ocula --revise-with "/private/work/private-link.txt" "/private/work/report.html"

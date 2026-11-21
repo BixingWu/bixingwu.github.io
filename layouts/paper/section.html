@@ -1,12 +1,12 @@
 {{ define "main" }}
 <main id="main" class="reader-width papers-index" tabindex="-1">
   <h1>Papers</h1>
-  {{ range site.Home.Params.publications }}
+  {{ range partialCached "publications.html" site.Home }}
     {{ $paper := . }}
-    {{ with site.GetPage (printf "/paper/%s" (.short_name | urlize)) }}
+    {{ with $paper.page }}
     <article class="index-paper">
       <a class="index-figure" href="{{ .RelPermalink }}" aria-label="Read {{ $paper.short_name }}">
-        {{ with resources.Get $paper.figure }}{{ $preview := .Resize "640x webp q88" }}<img src="{{ $preview.RelPermalink }}" width="{{ $preview.Width }}" height="{{ $preview.Height }}" alt="{{ $paper.figure_alt }}">{{ end }}
+        {{ with $paper.image }}{{ $preview := .Resize "640x webp q88" }}<img src="{{ $preview.RelPermalink }}" width="{{ $preview.Width }}" height="{{ $preview.Height }}" alt="{{ $paper.figure_alt }}">{{ end }}
       </a>
       <div>
         <p class="paper-eyebrow">{{ $paper.venue }}</p>

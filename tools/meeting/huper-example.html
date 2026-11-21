@@ -1,0 +1,77 @@
+<!-- Editable excerpts from Guo et al., HuPER, arXiv:2602.01634v2 (CC BY 4.0).
+     Figure and table numbers refer to https://bixingwu.com/paper/huper/.
+     Each section can be selected or reordered independently for a new meeting. -->
+<section class="slide figure-cover" data-slide-title="HuPER">
+  <header>
+    <div>
+      <p class="report-kind">Paper discussion</p>
+      <h1>HuPER</h1>
+    </div>
+    <p class="byline">Bixing Wu</p>
+  </header>
+  <figure class="paper-figure">
+    <img src="../../content/paper/huper/preview/huper_profile_pareto_scatter_v4.webp"
+         alt="Phone recognition error on five English datasets versus training hours. HuPER is marked by stars at 100 hours.">
+    <figcaption>Phone recognition across five English datasets.</figcaption>
+    <p class="source-credit">Guo et al. · HuPER · Figure 1</p>
+  </figure>
+</section>
+
+<section class="slide" data-slide-title="Evidence-controlled decoding">
+  <header class="slide-heading">
+    <p class="section-label">Paper</p>
+    <h2>How HuPER chooses a decoding route</h2>
+  </header>
+  <figure class="paper-figure">
+    <div class="evidence-scroll" role="region" tabindex="0" aria-label="HuPER decoding routes">
+      <img src="../../content/paper/huper/preview/huper-figure1-3.webp"
+           alt="The recognizer sends phone evidence to the scheduler. With a prompt, decoding uses an external reference. Without a prompt, strong evidence is decoded directly and weak evidence is refined with a predicted transcript.">
+    </div>
+    <figcaption>Without a prompt, <strong class="em-blue">strong evidence</strong> takes the direct route.
+      <strong class="em-red">Weak evidence</strong> triggers transcript-guided refinement.</figcaption>
+    <p class="source-credit">Guo et al. · HuPER · Figure 2</p>
+  </figure>
+</section>
+
+<section class="slide" data-slide-title="Refinement by distortion">
+  <header class="slide-heading">
+    <p class="section-label">Experiments</p>
+    <h2>Refinement helps most at high distortion</h2>
+  </header>
+  <div class="paired-evidence">
+    <figure>
+      <img src="../../content/paper/huper/ppa_tau_sweep.svg"
+           alt="Overall phonetic feature error rate on nfvPPA as the distortion threshold changes.">
+      <figcaption>Lowest error near <strong>τ = 0.57</strong>.</figcaption>
+    </figure>
+    <figure>
+      <img src="../../content/paper/huper/ppa_distortion_bins.svg"
+           alt="Error rates of direct and refined decoding across distortion bins. The gain from refinement concentrates in high-distortion segments.">
+      <figcaption>The largest gap between routes occurs in <strong>Q5</strong>.</figcaption>
+    </figure>
+    <p class="source-credit">Guo et al. · HuPER · Figure 5b–c · nfvPPA speech</p>
+  </div>
+</section>
+
+<section class="slide" data-slide-title="Decoding results on nfvPPA">
+  <header class="slide-heading">
+    <p class="section-label">Experiments</p>
+    <h2>Decoding results on nfvPPA speech</h2>
+  </header>
+  <figure>
+    <table class="data-table result-table" aria-label="Phonetic feature error rate and percentage of utterances refined">
+      <thead>
+        <tr><th scope="col">Decoder</th><th scope="col">PFER ↓</th><th scope="col">Refined</th></tr>
+      </thead>
+      <tbody>
+        <tr><th scope="row">Wav2Vec2Phoneme 1-best</th><td>0.46</td><td>–</td></tr>
+        <tr><th scope="row">HuPER 1-best</th><td>0.44</td><td>–</td></tr>
+        <tr data-emphasis><th scope="row">HuPER switched</th><td>0.38</td><td>31.1%</td></tr>
+        <tr><th scope="row">Dysfluent WFST</th><td>0.35</td><td>100%</td></tr>
+        <tr><th scope="row">HuPER + reference</th><td>0.32</td><td>100%</td></tr>
+      </tbody>
+    </table>
+    <figcaption>PFER is phonetic feature error rate, reported as a fraction. “Refined” is the share of utterances sent to refinement.</figcaption>
+    <p class="source-credit">Guo et al. · HuPER · Table 2</p>
+  </figure>
+</section>
