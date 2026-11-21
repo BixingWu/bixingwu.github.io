@@ -426,7 +426,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
     @media print { #slide-previews, #preview-backdrop, #toggle-previews { display: none !important; } }
     .deck-tools {
       display: flex; align-items: center; gap: .45rem;
-      padding: .2rem max(var(--edge), env(safe-area-inset-right)) max(.2rem, env(safe-area-inset-bottom)) max(var(--edge), env(safe-area-inset-left));
+      padding: .2rem max(var(--edge), env(safe-area-inset-right)) .2rem max(var(--edge), env(safe-area-inset-left));
       border-top: 1px solid var(--line);
     }
     #position { color: var(--muted); font-variant-numeric: tabular-nums; }
@@ -622,6 +622,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
     const slides = [...deck.children].filter(element => element.matches("section.slide"));
     const previous = document.getElementById("previous");
     const next = document.getElementById("next");
+    const deckTools = document.querySelector(".deck-tools");
     const position = document.getElementById("position");
     const jumpEditor = document.getElementById("slide-jump");
     const slideNumber = document.getElementById("slide-number");
@@ -763,6 +764,14 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
         window.parent.postMessage({ type: "bixing-slide:change", number }, "*");
       }
     }
+    // Defer mouse focus until click so a collapsing note cannot move the target mid-press.
+    const toolbarButton = event => event.target.closest("button:enabled:not(#jump-confirm)");
+    deckTools.addEventListener("mousedown", event => {
+      if (event.button === 0 && toolbarButton(event)) event.preventDefault();
+    });
+    deckTools.addEventListener("click", event => {
+      if (event.detail > 0) toolbarButton(event)?.focus({ preventScroll: true });
+    }, true);
     previous.addEventListener("click", () => displaySlide(current - 1));
     next.addEventListener("click", () => displaySlide(current + 1));
     function closeJump(restoreFocus) {
@@ -795,7 +804,9 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
     }
     slideNumber.addEventListener("input", () => slideNumber.setCustomValidity(""));
     const jumpConfirm = document.getElementById("jump-confirm");
-    jumpConfirm.addEventListener("pointerdown", event => event.preventDefault());
+    jumpConfirm.addEventListener("mousedown", event => {
+      if (event.button === 0) event.preventDefault();
+    });
     jumpConfirm.addEventListener("click", jumpToSlide);
     jumpEditor.addEventListener("keydown", event => {
       event.stopPropagation();
@@ -860,7 +871,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
     if (slides.length) {
       document.getElementById("deck-name").textContent = slides[0].querySelector("h1")?.textContent.trim() || "";
       document.body.classList.add("presenting");
-      document.querySelector(".deck-tools").hidden = false;
+      deckTools.hidden = false;
       previewToggle.hidden = slides.length < 2;
       position.disabled = slides.length < 2;
       if (!embedded) {
@@ -878,18 +889,23 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
   body.presenting.mn-standalone { grid-template-rows: minmax(0,1fr) auto auto; overflow: hidden; }
   body.mn-host { width: 100%; height: 100vh; height: 100dvh; min-height: 0; display: grid; grid-template-rows: minmax(0,1fr) auto; place-items: stretch; overflow: hidden; }
   body.mn-host > #slides-gate, body.mn-host #slide-viewer { display: block; min-width: 0; min-height: 0; width: 100%; height: 100%; }
-  #meeting-notes { display: grid; grid-template-columns: auto minmax(0,1fr) auto; align-items: baseline; column-gap: .8rem; box-sizing: border-box; min-width: 0; margin: 0; padding: .28rem max(clamp(1.1rem,2.8vw,3.8rem),env(safe-area-inset-right)) max(.28rem,env(safe-area-inset-bottom)) max(clamp(1.1rem,2.8vw,3.8rem),env(safe-area-inset-left)); border-top: 1px solid #d9d9d9; color-scheme: light; color: #000; background: #fff; text-align: left; font: 400 1rem/1.4 "Lato","Open Sans",system-ui,"PingFang SC","Microsoft YaHei",sans-serif; }
+  #meeting-notes { display: grid; grid-template-columns: auto minmax(0,1fr) auto; align-items: start; column-gap: .65rem; box-sizing: border-box; min-width: 0; margin: 0; padding: .25rem max(clamp(1.1rem,2.8vw,3.8rem),env(safe-area-inset-right)) max(.25rem,env(safe-area-inset-bottom)) max(clamp(1.1rem,2.8vw,3.8rem),env(safe-area-inset-left)); border-top: 1px solid #d9d9d9; color-scheme: light; color: #252525; background: #fff; text-align: left; font: 400 1rem/1.4 "Lato","Open Sans",system-ui,"PingFang SC","Microsoft YaHei",sans-serif; }
   #meeting-notes[hidden] { display: none !important; }
-  #meeting-notes label { margin: 0; white-space: nowrap; font: 600 .82rem/1.3 "Open Sans",system-ui,sans-serif; color: #595959; }
-  #meeting-notes .mn-status { text-align: right; font-size: .78rem; color: #595959; }
+  #meeting-notes label { margin: .26rem 0 0; white-space: nowrap; font: 600 .82rem/1.3 "Open Sans",system-ui,sans-serif; color: #595959; cursor: text; }
+  #meeting-notes .mn-status { margin-top: .26rem; text-align: right; font-size: .78rem; color: #595959; }
+  #meeting-notes .mn-status:not([data-unsaved]) { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  @media (min-width: 32.01rem) {
+    #meeting-notes:focus-within .mn-status:not([data-unsaved]) { position: static; width: auto; height: auto; clip-path: none; }
+  }
   #meeting-notes .mn-status:empty { display: none; }
   #meeting-notes .mn-status[data-unsaved] { color: #980000; }
-  #meeting-notes-text { display: block; field-sizing: content; box-sizing: border-box; width: 100%; min-width: 0; min-height: 1.6rem; max-height: clamp(3.2rem,16dvh,7rem); margin: 0; border: 0; border-radius: 0; padding: .05rem .15rem; color: #000; background: #fff; font: inherit; resize: none; overflow: auto; }
+  #meeting-notes-text { display: block; field-sizing: content; box-sizing: border-box; width: 100%; min-width: 0; min-height: 1.65em; max-height: 1.65em; margin: 0; border: 0; border-radius: 0; padding: .125em .2rem; color: inherit; background: transparent; font: inherit; resize: none; overflow: hidden; }
+  #meeting-notes-text:focus { max-height: clamp(3.05em, 14dvh, 4.45em); overflow-y: auto; overscroll-behavior-y: contain; scrollbar-width: thin; }
   #meeting-notes-text::placeholder { color: #686868; opacity: 1; }
   #meeting-notes-text:focus-visible { outline: none; box-shadow: inset 0 -1px #1c4587; }
   @media (max-width: 32rem) {
     #meeting-notes { grid-template-columns: auto minmax(0,1fr); column-gap: .55rem; }
-    #meeting-notes .mn-status { grid-column: 2; text-align: left; }
+    #meeting-notes .mn-status { grid-column: 1 / -1; margin: 0; text-align: left; }
   }
   @media print { #meeting-notes { display: none !important; } }
 </style>
@@ -919,8 +935,14 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
 
   function fitField() {
     if (nativeSizing || panel.hidden) return;
+    if (document.activeElement !== field) {
+      field.style.removeProperty("height");
+      return;
+    }
+    const top = field.scrollTop;
     field.style.height = "auto";
     field.style.height = field.scrollHeight + "px";
+    field.scrollTop = top;
   }
 
   function feedback(text, failed = false) {
@@ -961,8 +983,10 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
     }
     drafts.set(number, value);
     field.value = value;
+    field.setSelectionRange(0, 0);
     panel.hidden = false;
     fitField();
+    field.scrollTop = 0;
     document.body.classList.add(gate ? "mn-host" : "mn-standalone");
   }
 
@@ -974,6 +998,11 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
   }
   field.addEventListener("input", save);
   field.addEventListener("compositionend", save);
+  field.addEventListener("focus", fitField);
+  field.addEventListener("blur", () => {
+    fitField();
+    field.scrollTop = 0;
+  });
   panel.addEventListener("keydown", event => {
     event.stopPropagation();
     if (event.key === "Escape" && !event.isComposing && event.keyCode !== 229) {

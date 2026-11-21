@@ -33,11 +33,12 @@ body.mn-host #slide-footer {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: start;
-  padding-right: max(clamp(1.1rem, 2.8vw, 3.8rem), env(safe-area-inset-right));
-  border-top: 1px solid #d9d9d9;
+  margin: 0;
+  padding: 0 max(clamp(1.1rem, 2.8vw, 3.8rem), env(safe-area-inset-right)) env(safe-area-inset-bottom) 0;
+  border-top: 1px solid #e7e9ed;
   background: #fff;
 }
-#slide-footer #meeting-notes { border-top: 0; padding-right: .6rem; }
+#slide-footer #meeting-notes { border-top: 0; padding-right: .6rem; padding-bottom: .25rem; }
 #copy-share-link {
   display: inline-flex;
   align-items: center;
@@ -88,6 +89,8 @@ body.mn-host #slide-footer {
 @media (max-width: 32rem) {
   body.mn-host #slide-footer { padding-right: max(.5rem, env(safe-area-inset-right)); }
   #copy-share-link { inline-size: 8.1rem; gap: .25rem; padding-inline: .35rem; }
+  #slide-footer:has(#meeting-notes-text:focus) #copy-share-link { inline-size: 2.75rem; }
+  #slide-footer:has(#meeting-notes-text:focus) #share-link-label { position: absolute; inline-size: 1px; block-size: 1px; overflow: hidden; clip-path: inset(50%); }
 }
 @media (max-width: 360px) {
   #slide-footer #meeting-notes { column-gap: .35rem; padding-inline: max(.7rem, env(safe-area-inset-left)) .25rem; }

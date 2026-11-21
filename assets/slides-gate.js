@@ -75,6 +75,10 @@
       shareField.select();
     }
   }
+  copyButton.addEventListener("mousedown", event => {
+    // Keep the editor steady until the link is copied.
+    if (event.button === 0 && document.activeElement?.id === "meeting-notes-text") event.preventDefault();
+  });
   copyButton.addEventListener("click", copyShareLink);
   shareDialog.addEventListener("close", () => {
     shareField.value = "";
