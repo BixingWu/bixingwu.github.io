@@ -3,13 +3,10 @@ title: Bixing Wu
 description: Academic homepage of Bixing Wu, an undergraduate at Zhejiang University working on active visual perception, efficient video understanding, and multimodal learning.
 params:
   profile:
-    given_name: Bixing
-    family_name: Wu
     chinese_name: 吴必兴
-    wordmark: bw.
     affiliation: Zhejiang University
     role: Undergraduate researcher
-    email: bixingwu@zju.edu.cn
+    email: bixing.wu.cs@gmail.com
     portrait: assets/portrait.jpg
     portrait_alt: "My illustrated avatar: a figure facing the sea beneath an orange and blue sunset."
   publications:
@@ -69,4 +66,4 @@ params:
       detail: Advisor · Prof. Gopala Anumanchipalli
 ---
 
-I study how models decide where to look in a video and how they learn from sound and vision together. My research interests include active visual perception, efficient video understanding, and multimodal learning.
+I work on active visual perception, efficient video understanding, and multimodal learning. My recent projects explore how sound can guide visual representations and how models recognize speech sounds.

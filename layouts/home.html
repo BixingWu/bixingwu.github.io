@@ -15,7 +15,6 @@
   <meta property="og:image" content="{{ $profile.portrait | absURL }}">
   <meta property="og:image:alt" content="{{ $profile.portrait_alt }}">
   <link rel="icon" href="assets/icon.png" type="image/png">
-  <link rel="preload" href="assets/fonts/instrument-serif.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="style.css">
   <script src="site.js" defer></script>
 </head>
@@ -32,7 +31,7 @@
   </svg>
   <header class="masthead">
     <div class="shell masthead-inner">
-      <a class="wordmark" href="#top" aria-label="{{ .Title }}, back to top"><i aria-hidden="true">{{ $profile.wordmark }}</i></a>
+      <a class="wordmark" href="#top" aria-label="{{ .Title }}, back to top"><span>{{ .Title }}</span></a>
       <nav aria-label="Main navigation">
         <a href="#about" aria-current="location">About</a>
         <a href="#publications">Publications</a>
@@ -45,12 +44,13 @@
   </header>
   <main id="main">
     <section class="hero" id="about" aria-labelledby="name">
-      <div class="tide" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
       <div class="shell hero-inner">
         <div class="introduction">
-          <p class="eyebrow">{{ $profile.affiliation }}</p>
-          <h1 id="name">{{ $profile.given_name }} <em>{{ $profile.family_name }}</em>{{ with $profile.chinese_name }}<span lang="zh-Hans">{{ . }}</span>{{ end }}</h1>
-          <p class="role">{{ $profile.role }}</p>
+          <div class="identity">
+            <p class="eyebrow">{{ $profile.affiliation }}</p>
+            <h1 id="name">{{ .Title }}{{ with $profile.chinese_name }} <span class="native-name" lang="zh-Hans">{{ . }}</span>{{ end }}</h1>
+            <p class="role">{{ $profile.role }}</p>
+          </div>
           <div class="bio">{{ .Content }}</div>
           <div class="contact">
             <a class="button" href="#publications"><svg class="icon" aria-hidden="true"><use href="#pages"/></svg>View publications</a>
@@ -64,7 +64,7 @@
     </section>
     <div class="shell">
       <section class="works" id="publications" aria-labelledby="works-heading">
-        <h2 id="works-heading">Selected <em>publications</em></h2>
+        <h2 id="works-heading">Selected publications</h2>
         {{ range .Params.publications }}
         <article class="paper">
           <img class="paper-figure" src="{{ .figure }}" width="720" height="480" loading="lazy" alt="{{ .figure_alt }}">
@@ -84,7 +84,7 @@
         {{ end }}
       </section>
       <section class="experience" id="experience" aria-labelledby="experience-heading">
-        <h2 id="experience-heading">Education <em>&amp; experience</em></h2>
+        <h2 id="experience-heading">Education &amp; experience</h2>
         {{ range .Params.experience }}
         <div class="placement">
           <p class="dates">{{ .dates }}</p>

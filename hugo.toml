@@ -6,6 +6,7 @@ disableKinds = ["taxonomy", "term", "RSS", "404"]
 [[module.mounts]]
 source = "assets"
 target = "static/assets"
+files = ["! fonts/**"]
 
 [[module.mounts]]
 source = "style.css"
