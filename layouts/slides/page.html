@@ -19,5 +19,23 @@
 </main>
 {{ $notes := findRE `(?s)<!-- meeting-notes:start -->.*?<!-- meeting-notes:end -->` (readFile "tools/slides-template.html") }}
 {{ if ne (len $notes) 1 }}{{ errorf "The slide template must contain one discussion notes section" }}{{ end }}
-{{ range $notes }}{{ . | safeHTML }}{{ end }}
+<footer id="slide-footer">
+  {{ range $notes }}{{ . | safeHTML }}{{ end }}
+  <button type="button" id="copy-share-link" title="Copy a link that opens this presentation" hidden>
+    <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+      <path class="link-chain" d="m9 15 6-6m-4-3 1.6-1.6a4.5 4.5 0 0 1 6.4 6.4L17 13m-4 5-1.6 1.6A4.5 4.5 0 0 1 5 13.2L7 11"/>
+      <path class="link-check" d="m5 12 4.5 4.5L19 7"/>
+    </svg>
+    <span id="share-link-label">Copy share link</span>
+  </button>
+  <span id="share-link-status" role="status" aria-live="polite" aria-atomic="true"></span>
+</footer>
+<dialog id="share-link-dialog" aria-labelledby="share-link-title" aria-describedby="share-link-help">
+  <h2 id="share-link-title">Share this presentation</h2>
+  <p id="share-link-help">Copy the full link below. Anyone with it can open the slides.</p>
+  <input id="share-link-value" type="text" aria-label="Private share link" autocomplete="off" autocapitalize="none" spellcheck="false" readonly>
+  <form method="dialog">
+    <button id="close-share-link">Done</button>
+  </form>
+</dialog>
 {{ end }}

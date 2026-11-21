@@ -8,6 +8,11 @@
   const button = document.getElementById("unlock-slides");
   const status = document.getElementById("unlock-status");
   const viewer = document.getElementById("slide-viewer");
+  const copyButton = document.getElementById("copy-share-link");
+  const copyLabel = document.getElementById("share-link-label");
+  const copyStatus = document.getElementById("share-link-status");
+  const shareDialog = document.getElementById("share-link-dialog");
+  const shareField = document.getElementById("share-link-value");
   if (!/^[0-9a-f]{32}$/.test(id) || !window.isSecureContext || !window.crypto?.subtle) {
     status.textContent = "Open the original HTTPS link in a browser that supports secure decryption.";
     button.disabled = true;
@@ -21,8 +26,9 @@
   const context = encoder.encode("bixingwu.com/slides/v1/" + id);
   const storageKey = "slides:access:" + id;
   let pending;
-  let opened = false;
+  let accessCode = "";
   let viewerReady = false;
+  let feedbackTimer;
 
   function canonicalCode(value) {
     const code = (value || "").normalize("NFKC").toLowerCase()
@@ -38,6 +44,33 @@
       else localStorage.removeItem(storageKey);
     } catch { /* The shared link still works without device storage. */ }
   }
+  async function copyShareLink() {
+    if (!accessCode) return;
+    const link = new URL(location.pathname, location.origin);
+    link.hash = "p=" + accessCode.match(/.{4}/g).join("-");
+    clearTimeout(feedbackTimer);
+    try {
+      await navigator.clipboard.writeText(link.href);
+      copyLabel.textContent = "Copied";
+      copyStatus.textContent = "Share link copied.";
+      feedbackTimer = setTimeout(() => {
+        copyLabel.textContent = "Copy share link";
+        copyStatus.textContent = "";
+      }, 2200);
+    } catch {
+      copyLabel.textContent = "Copy share link";
+      copyStatus.textContent = "";
+      shareField.value = link.href;
+      if (!shareDialog.open) shareDialog.showModal();
+      shareField.focus();
+      shareField.select();
+    }
+  }
+  copyButton.addEventListener("click", copyShareLink);
+  shareDialog.addEventListener("close", () => {
+    shareField.value = "";
+    copyButton.focus({ preventScroll: true });
+  });
   function hashParts() {
     return location.hash.slice(1).split("&").filter(Boolean);
   }
@@ -61,13 +94,13 @@
     document.dispatchEvent(new CustomEvent("bixing-notes:page", { detail: { slide: number } }));
   }
   viewer.addEventListener("load", () => {
-    if (!opened) return;
+    if (!accessCode) return;
     viewerReady = true;
     applySlideHash();
   });
   window.addEventListener("message", event => {
     const message = event.data;
-    if (!opened || !viewerReady || event.source !== viewer.contentWindow || event.origin !== "null" ||
+    if (!accessCode || !viewerReady || event.source !== viewer.contentWindow || event.origin !== "null" ||
         message?.type !== "bixing-slide:change" || !Number.isSafeInteger(message.number) || message.number < 1) return;
     const hash = message.number === 1 ? "" : "#" + message.number;
     if (location.hash !== hash) history.replaceState(history.state, "", location.pathname + location.search + hash);
@@ -117,7 +150,7 @@
         viewer.setAttribute("sandbox", "allow-scripts");
         viewer.referrerPolicy = "no-referrer";
         viewerReady = false;
-        opened = true;
+        accessCode = code;
         viewer.srcdoc = prefix + html.replace(/^\s*<!doctype\s+html(?:\s[^>]*)?>/i, "");
         remember(code);
         input.value = "";
@@ -125,6 +158,7 @@
         heading.hidden = true;
         status.textContent = "";
         viewer.hidden = false;
+        copyButton.hidden = false;
         viewer.focus({ preventScroll: true });
         return;
       }
@@ -146,7 +180,7 @@
   });
   function openLocation() {
     const explicit = new URLSearchParams(location.hash.slice(1)).get("p");
-    if (explicit !== null || !opened) unlock(explicit);
+    if (explicit !== null || !accessCode) unlock(explicit);
     else applySlideHash();
   }
   window.addEventListener("hashchange", openLocation);
