@@ -25,6 +25,7 @@
   const encoder = new TextEncoder();
   const context = encoder.encode("bixingwu.com/slides/v1/" + id);
   const storageKey = "slides:access:" + id;
+  const previewKey = "slides:preview-open:" + id;
   let pending;
   let accessCode = "";
   let viewerReady = false;
@@ -96,12 +97,22 @@
   viewer.addEventListener("load", () => {
     if (!accessCode) return;
     viewerReady = true;
+    try {
+      const preference = localStorage.getItem(previewKey);
+      if (preference === "true" || preference === "false") {
+        viewer.contentWindow.postMessage({ type: "bixing-preview:restore", open: preference === "true" }, "*");
+      }
+    } catch { /* The preview panel also works without persistence. */ }
     applySlideHash();
   });
   window.addEventListener("message", event => {
     const message = event.data;
-    if (!accessCode || !viewerReady || event.source !== viewer.contentWindow || event.origin !== "null" ||
-        message?.type !== "bixing-slide:change" || !Number.isSafeInteger(message.number) || message.number < 1) return;
+    if (!accessCode || !viewerReady || event.source !== viewer.contentWindow || event.origin !== "null") return;
+    if (message?.type === "bixing-preview:preference" && typeof message.open === "boolean") {
+      try { localStorage.setItem(previewKey, String(message.open)); } catch { /* Keep the in-session choice. */ }
+      return;
+    }
+    if (message?.type !== "bixing-slide:change" || !Number.isSafeInteger(message.number) || message.number < 1) return;
     const hash = message.number === 1 ? "" : "#" + message.number;
     if (location.hash !== hash) history.replaceState(history.state, "", location.pathname + location.search + hash);
     selectNotesPage(message.number);

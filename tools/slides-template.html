@@ -388,8 +388,42 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
     .presenting .slide:not(.cover) > :nth-child(2) { align-self: start; }
     .presenting .trajectory-list { margin-top: clamp(.35rem, 2.8vh, 2rem); }
     body.presenting { height: 100vh; height: 100dvh; display: grid; grid-template-rows: minmax(0, 1fr) auto; }
-    .presenting main { overflow-y: auto; container-type: size; }
+    .presenting #deck-stage { position: relative; display: flex; min-height: 0; min-width: 0; }
+    .presenting main { min-width: 0; flex: 1 1 0; overflow-y: auto; container-type: size; }
     .presenting .slide { min-height: 100%; border: 0; }
+    #slide-previews {
+      display: flex; flex: none; flex-direction: column; width: clamp(9.5rem, 12vw, 10.75rem); min-height: 0;
+      border-inline-end: 1px solid #dedfe2; background: #f5f6f8;
+      color: #4a505a; font: 500 .8rem/1.3 "Open Sans", system-ui, sans-serif;
+    }
+    .previews-heading { display: flex; align-items: center; justify-content: space-between; padding: .3rem .55rem .1rem .9rem; }
+    .previews-heading span { font-weight: 600; }
+    #close-previews, .preview-page { border: 0; background: transparent; color: inherit; font: inherit; cursor: pointer; }
+    #close-previews { display: grid; place-items: center; width: 2.75rem; height: 2.75rem; border-radius: .4rem; }
+    #close-previews:hover, #close-previews:focus-visible { background: #e7eaef; }
+    #preview-list { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; margin: 0; padding: .3rem .7rem .8rem; list-style: none; }
+    #preview-list li + li { margin-top: .55rem; }
+    .preview-page { width: 100%; display: grid; grid-template-columns: max-content minmax(0,1fr); align-items: start; gap: .35rem; padding: .13rem; text-align: start; }
+    .preview-number { padding-top: .1rem; min-width: 1.35em; text-align: end; font-size: .7rem; font-variant-numeric: tabular-nums; }
+    .preview-paper {
+      aspect-ratio: 16 / 9; display: grid; align-content: center; overflow: hidden; border-radius: .18rem;
+      background: #fff; box-shadow: 0 0 0 1px #ced2d8; color: #25282d;
+    }
+    .preview-paper img { display: block; width: 100%; height: 100%; object-fit: contain; }
+    .preview-paper span { margin: .55rem; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden; font-size: .74rem; font-weight: 600; }
+    .preview-page:hover .preview-paper { box-shadow: 0 0 0 1px #758298; }
+    .preview-page[aria-current="page"] { color: var(--accent); font-weight: 700; }
+    .preview-page[aria-current="page"] .preview-paper { box-shadow: 0 0 0 2px var(--accent); }
+    #slide-previews button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: .2rem; }
+    #preview-backdrop { position: absolute; inset: 0; z-index: 1; background: rgb(22 31 46 / 22%); }
+    @media not all and (min-width: 70rem) and (min-height: 34rem) {
+      #slide-previews { position: absolute; inset-block: 0; inset-inline-start: 0; z-index: 2; width: min(14.25rem, 78%); box-shadow: .22rem 0 1rem rgb(22 31 46 / 12%); }
+    }
+    @media (prefers-reduced-motion: no-preference) {
+      #slide-previews[data-drawer] { animation: previews-in .16s ease-out; }
+      @keyframes previews-in { from { transform: translateX(-.65rem); } }
+    }
+    @media print { #slide-previews, #preview-backdrop, #toggle-previews { display: none !important; } }
     .deck-tools {
       display: flex; align-items: center; gap: .45rem;
       padding: .4rem max(var(--edge), env(safe-area-inset-right)) max(.4rem, env(safe-area-inset-bottom)) max(var(--edge), env(safe-area-inset-left));
@@ -401,6 +435,8 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
     .deck-tools button:hover:enabled, .deck-tools button:focus-visible { background: var(--wash); }
     .deck-tools button:focus-visible { outline: 2px solid currentColor; outline-offset: -2px; }
     .deck-tools button:disabled { opacity: .35; cursor: default; }
+    #toggle-previews { display: grid; place-items: center; color: #4a505a; }
+    #toggle-previews[aria-expanded="true"] { color: var(--accent); }
     @media (min-width: 43.01rem) and (min-height: 30.01rem) {
       .presenting .cover { align-content: start; align-items: start; padding-block-start: 38cqh; }
       .presenting .cover .byline { margin-top: 7cqh; }
@@ -423,6 +459,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
       .plot { font-size: 22px; }
       .deck-tools { gap: .12rem; font-size: .875rem; }
       #deck-name { display: none; }
+      #toggle-previews { margin-inline-end: auto; }
     }
     @media (orientation: landscape) and (max-height: 30rem) {
       .slide { padding-block: .65rem; gap: .55rem; }
@@ -456,6 +493,17 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
   </style>
 </head>
 <body>
+  <div id="deck-stage">
+  <aside id="slide-previews" aria-label="Slide previews" hidden>
+    <div class="previews-heading">
+      <span>Slides</span>
+      <button id="close-previews" type="button" aria-label="Hide slide previews" title="Hide slide previews">
+        <svg aria-hidden="true" width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m12.25 4.75-5.25 5.25 5.25 5.25"/></svg>
+      </button>
+    </div>
+    <ol id="preview-list"></ol>
+  </aside>
+  <div id="preview-backdrop" aria-hidden="true" hidden></div>
   <main id="slides" aria-label="Slides">
     <!-- deck-slides:start -->
     <section class="slide cover" data-slide-title="Sampling a signal">
@@ -552,7 +600,11 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
     </section>
     <!-- deck-slides:end -->
   </main>
+  </div>
   <nav class="deck-tools" hidden aria-label="Presentation controls">
+    <button id="toggle-previews" type="button" aria-controls="slide-previews" aria-expanded="false" aria-label="Show slide previews" title="Show slide previews">
+      <svg aria-hidden="true" width="19" height="19" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="16" height="14" rx="2.2"/><path d="M7.4 3v14M4.2 6.5h1M4.2 9.5h1"/></svg>
+    </button>
     <span id="deck-name" aria-hidden="true"></span>
     <span id="position" role="status" aria-live="polite"></span>
     <button id="previous" type="button" aria-label="Previous slide" title="Previous slide">←</button>
@@ -564,7 +616,110 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
     const previous = document.getElementById("previous");
     const next = document.getElementById("next");
     const position = document.getElementById("position");
+    const previewPanel = document.getElementById("slide-previews");
+    const previewList = document.getElementById("preview-list");
+    const previewToggle = document.getElementById("toggle-previews");
+    const previewBackdrop = document.getElementById("preview-backdrop");
+    const wideStage = window.matchMedia("(min-width: 70rem) and (min-height: 34rem)");
+    const embedded = window.parent !== window;
+    const preferenceKey = "bixing:slide-previews:" + location.pathname;
+    let desktopPreference = null;
     let current = 0;
+
+    const previewButtons = slides.map((slide, index) => {
+      const number = index + 1;
+      const title = slide.dataset.slideTitle?.trim() || slide.querySelector("h1, h2")?.textContent.trim() || "";
+      const item = document.createElement("li");
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "preview-page";
+      button.dataset.slideNumber = String(number);
+      button.tabIndex = -1;
+      button.title = "Slide " + number + (title ? " · " + title : "");
+      button.setAttribute("aria-label", button.title);
+      const label = document.createElement("span");
+      label.className = "preview-number";
+      label.textContent = number;
+      const paper = document.createElement("span");
+      paper.className = "preview-paper";
+      paper.setAttribute("aria-hidden", "true");
+      const fallback = document.createElement("span");
+      fallback.textContent = title || button.title;
+      if (/^data:image\/(webp|jpeg|png);base64,/i.test(slide.dataset.preview || "")) {
+        const image = document.createElement("img");
+        image.alt = "";
+        image.loading = "lazy";
+        image.decoding = "async";
+        image.addEventListener("error", () => image.replaceWith(fallback), { once: true });
+        image.src = slide.dataset.preview;
+        paper.append(image);
+      } else {
+        paper.append(fallback);
+      }
+      button.append(label, paper);
+      item.append(button);
+      previewList.append(item);
+      return button;
+    });
+
+    function revealPreview(button) {
+      if (!button || previewPanel.hidden) return;
+      const tile = button.getBoundingClientRect();
+      const list = previewList.getBoundingClientRect();
+      if (tile.top < list.top) previewList.scrollTop += tile.top - list.top - 4;
+      else if (tile.bottom > list.bottom) previewList.scrollTop += tile.bottom - list.bottom + 4;
+    }
+
+    function setPreviews(open) {
+      open = open && slides.length > 1;
+      const drawer = open && !wideStage.matches;
+      if (!open && previewPanel.contains(document.activeElement)) previewToggle.focus({ preventScroll: true });
+      previewPanel.hidden = !open;
+      previewPanel.toggleAttribute("data-drawer", drawer);
+      previewBackdrop.hidden = !drawer;
+      deck.inert = drawer;
+      previewToggle.setAttribute("aria-expanded", String(open));
+      previewToggle.title = (open ? "Hide" : "Show") + " slide previews";
+      previewToggle.setAttribute("aria-label", previewToggle.title);
+      if (open) revealPreview(previewButtons[current - 1]);
+    }
+
+    function choosePreviews(open) {
+      setPreviews(open);
+      if (wideStage.matches) {
+        desktopPreference = open;
+        if (embedded) window.parent.postMessage({ type: "bixing-preview:preference", open }, "*");
+        else {
+          try { localStorage.setItem(preferenceKey, String(open)); } catch { /* Storage is optional. */ }
+        }
+      } else if (open) {
+        previewButtons[current - 1]?.focus({ preventScroll: true });
+      }
+    }
+
+    previewToggle.addEventListener("click", () => choosePreviews(previewPanel.hidden));
+    document.getElementById("close-previews").addEventListener("click", () => choosePreviews(false));
+    previewBackdrop.addEventListener("click", () => choosePreviews(false));
+    wideStage.addEventListener("change", () => setPreviews(wideStage.matches && (desktopPreference ?? true)));
+    previewList.addEventListener("click", event => {
+      const button = event.target.closest("[data-slide-number]");
+      if (!button) return;
+      displaySlide(Number(button.dataset.slideNumber));
+      if (!wideStage.matches) {
+        setPreviews(false);
+        previewToggle.focus({ preventScroll: true });
+      }
+    });
+    previewList.addEventListener("keydown", event => {
+      if (event.altKey || event.ctrlKey || event.metaKey) return;
+      const number = Number(event.target.dataset.slideNumber);
+      const destination = { ArrowUp: number - 1, ArrowDown: number + 1, Home: 1, End: slides.length }[event.key];
+      if (destination === undefined) return;
+      event.preventDefault();
+      const button = previewButtons[Math.max(1, Math.min(destination, slides.length)) - 1];
+      button.focus({ preventScroll: true });
+      revealPreview(button);
+    });
 
     function displaySlide(number, acknowledge = false) {
       if (!Number.isSafeInteger(number) || !slides.length) return;
@@ -572,6 +727,16 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
       if (number === current && !acknowledge) return;
       const initial = current === 0;
       if (number !== current) {
+        const oldPreview = previewButtons[current - 1];
+        const activePreview = previewButtons[number - 1];
+        if (oldPreview) {
+          oldPreview.removeAttribute("aria-current");
+          oldPreview.tabIndex = -1;
+        }
+        activePreview.setAttribute("aria-current", "page");
+        activePreview.tabIndex = 0;
+        if (previewList.contains(document.activeElement)) activePreview.focus({ preventScroll: true });
+        revealPreview(activePreview);
         current = number;
         slides.forEach((slide, index) => {
           slide.hidden = index !== number - 1;
@@ -591,8 +756,12 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
     previous.addEventListener("click", () => displaySlide(current - 1));
     next.addEventListener("click", () => displaySlide(current + 1));
     window.addEventListener("message", event => {
-      if (window.parent !== window && event.source === window.parent && event.data?.type === "bixing-slide:go") {
+      if (!embedded || event.source !== window.parent) return;
+      if (event.data?.type === "bixing-slide:go") {
         displaySlide(event.data.number, true);
+      } else if (event.data?.type === "bixing-preview:restore" && typeof event.data.open === "boolean") {
+        desktopPreference = event.data.open;
+        if (wideStage.matches) setPreviews(desktopPreference);
       }
     });
 
@@ -603,6 +772,12 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
     document.addEventListener("keydown", event => {
       if (event.defaultPrevented || document.querySelector("dialog[open]") || event.altKey || event.ctrlKey || event.metaKey ||
           event.target.isContentEditable || event.target.closest("input, select, textarea") || scrollableEvidence(event.target)) return;
+      if (event.key === "Escape" && !previewPanel.hidden) {
+        event.preventDefault();
+        choosePreviews(false);
+        previewToggle.focus({ preventScroll: true });
+        return;
+      }
       const target = { ArrowLeft: current - 1, ArrowRight: current + 1, Home: 1, End: slides.length }[event.key];
       if (target === undefined) return;
       event.preventDefault();
@@ -629,8 +804,16 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
     if (slides.length) {
       document.getElementById("deck-name").textContent = slides[0].querySelector("h1")?.textContent.trim() || "";
       document.body.classList.add("presenting");
-      document.querySelector("nav").hidden = false;
+      document.querySelector(".deck-tools").hidden = false;
+      previewToggle.hidden = slides.length < 2;
+      if (!embedded) {
+        try {
+          const saved = localStorage.getItem(preferenceKey);
+          if (saved !== null) desktopPreference = saved === "true";
+        } catch { /* Storage is optional. */ }
+      }
       displaySlide(1);
+      setPreviews(wideStage.matches && (desktopPreference ?? true));
     }
   </script>
 <!-- meeting-notes:start -->
