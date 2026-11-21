@@ -1,0 +1,24 @@
+baseURL = "https://bixingwu.com/"
+defaultContentLanguage = "en"
+title = "Bixing Wu"
+disableKinds = ["taxonomy", "term", "RSS", "404"]
+
+[[module.mounts]]
+source = "assets"
+target = "static/assets"
+
+[[module.mounts]]
+source = "style.css"
+target = "static/style.css"
+
+[[module.mounts]]
+source = "site.js"
+target = "static/site.js"
+
+[[module.mounts]]
+source = "CNAME"
+target = "static/CNAME"
+
+[[module.mounts]]
+source = ".nojekyll"
+target = "static/.nojekyll"
