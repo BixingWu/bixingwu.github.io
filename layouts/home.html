@@ -15,8 +15,8 @@
   <meta property="og:image" content="{{ $profile.portrait | absURL }}">
   <meta property="og:image:alt" content="{{ $profile.portrait_alt }}">
   <link rel="icon" href="assets/icon.png" type="image/png">
-  <link rel="stylesheet" href="style.css">
-  <script src="site.js" defer></script>
+  {{ with resources.Get "style.css" | fingerprint }}<link rel="stylesheet" href="{{ .RelPermalink }}">{{ end }}
+  {{ with resources.Get "site.js" | fingerprint }}<script src="{{ .RelPermalink }}" defer></script>{{ end }}
 </head>
 <body id="top">
   <a class="skip" href="#main">Skip to content</a>

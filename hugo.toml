@@ -10,11 +10,11 @@ files = ["! fonts/**"]
 
 [[module.mounts]]
 source = "style.css"
-target = "static/style.css"
+target = "assets/style.css"
 
 [[module.mounts]]
 source = "site.js"
-target = "static/site.js"
+target = "assets/site.js"
 
 [[module.mounts]]
 source = "CNAME"
