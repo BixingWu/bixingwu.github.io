@@ -2,10 +2,6 @@ const root = document.documentElement;
 const toggle = document.getElementById("theme-toggle");
 const systemTheme = window.matchMedia("(prefers-color-scheme: dark)");
 const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-try {
-  const saved = localStorage.getItem("appearance");
-  if (saved === "light" || saved === "dark") root.dataset.theme = saved;
-} catch { /* System appearance works when storage is unavailable. */ }
 
 function currentTheme() {
   return root.dataset.theme || (systemTheme.matches ? "dark" : "light");
@@ -42,6 +38,7 @@ let scheduled = false;
 let currentLink = links[0];
 let hoverLink = null;
 let destination = null;
+let bottomLink = null;
 let markerLeft = 0;
 
 function positionMarker() {
@@ -53,7 +50,7 @@ function positionMarker() {
   markerLeft = left;
   nav.style.setProperty("--mark-left", left + "px");
   nav.style.setProperty("--mark-right", right + "px");
-  nav.dataset.marker = "";
+  if (!nav.hasAttribute("data-marker")) nav.dataset.marker = "";
 }
 
 function updateNavigation() {
@@ -67,11 +64,8 @@ function updateNavigation() {
   sections.forEach((section, index) => {
     if (section.getBoundingClientRect().top <= threshold) active = index;
   });
-  if (atEnd) {
-    // On a tall screen several anchors can share the same final scroll position.
-    const target = links.findIndex(link => link.hash === location.hash);
-    active = target >= 0 && sections[target].getBoundingClientRect().top >= threshold - 16 ? target : links.length - 1;
-  }
+  if (atEnd) active = bottomLink ? links.indexOf(bottomLink) : links.length - 1;
+  else bottomLink = null;
   if (destination) {
     // A native smooth scroll may pass another section on the way to the clicked anchor.
     active = links.indexOf(destination);
@@ -79,13 +73,17 @@ function updateNavigation() {
     const inset = parseFloat(getComputedStyle(section).scrollMarginTop) || 0;
     const top = scroll + section.getBoundingClientRect().top - inset;
     const limit = Math.max(0, root.scrollHeight - innerHeight);
-    if (Math.abs(scroll - Math.max(0, Math.min(top, limit))) < 2) destination = null;
+    if (Math.abs(scroll - Math.max(0, Math.min(top, limit))) < 2) {
+      // Several anchors may share the bottom pixel. Keep the chosen one only there.
+      bottomLink = atEnd ? destination : null;
+      destination = null;
+    }
   }
-  currentLink = links[active];
-  links.forEach((link, index) => {
-    if (index === active) link.setAttribute("aria-current", "location");
-    else link.removeAttribute("aria-current");
-  });
+  if (currentLink !== links[active]) {
+    currentLink.removeAttribute("aria-current");
+    currentLink = links[active];
+    currentLink.setAttribute("aria-current", "location");
+  }
   positionMarker();
   bar.style.setProperty("--fold", fold.toFixed(3));
   cover.style.setProperty("--drift", drift.toFixed(3));
@@ -101,11 +99,14 @@ function scheduleNavigation() {
 window.addEventListener("scroll", scheduleNavigation, { passive: true });
 window.addEventListener("resize", scheduleNavigation);
 window.addEventListener("load", scheduleNavigation);
-window.addEventListener("hashchange", () => {
+function followHash() {
+  bottomLink = null;
   destination = links.find(link => link.hash === location.hash) || null;
   scheduleNavigation();
-});
+}
+window.addEventListener("hashchange", followHash);
 function resumeScrollTracking() {
+  bottomLink = null;
   destination = null;
   hoverLink = null;
   scheduleNavigation();
@@ -129,7 +130,7 @@ nav.addEventListener("pointerleave", () => { hoverLink = null; positionMarker();
 nav.addEventListener("focusin", positionMarker);
 nav.addEventListener("focusout", scheduleNavigation);
 reducedMotion.addEventListener("change", scheduleNavigation);
-scheduleNavigation();
+followHash();
 
 const dialog = document.getElementById("figure-dialog");
 if (dialog && typeof dialog.showModal === "function") {
@@ -141,6 +142,7 @@ if (dialog && typeof dialog.showModal === "function") {
   let opener = null;
   let motion = null;
   let closing = false;
+  let pressedBackdrop = false;
 
   function animateFigure(thumb, returning = false) {
     if (reducedMotion.matches || typeof dialog.animate !== "function") return null;
@@ -226,11 +228,18 @@ if (dialog && typeof dialog.showModal === "function") {
     event.preventDefault();
     closeFigure();
   });
-  dialog.addEventListener("click", event => {
-    if (event.target !== dialog) return;
+  function isBackdrop(event) {
+    if (event.target !== dialog) return false;
     const box = dialog.getBoundingClientRect();
-    if (event.clientX < box.left || event.clientX > box.right ||
-        event.clientY < box.top || event.clientY > box.bottom) closeFigure();
+    return event.clientX < box.left || event.clientX > box.right ||
+      event.clientY < box.top || event.clientY > box.bottom;
+  }
+  dialog.addEventListener("pointerdown", event => {
+    pressedBackdrop = event.isPrimary && isBackdrop(event);
+  });
+  dialog.addEventListener("click", event => {
+    if (pressedBackdrop && isBackdrop(event)) closeFigure();
+    pressedBackdrop = false;
   });
   dialog.addEventListener("close", () => {
     if (dialog.open) return;

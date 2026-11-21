@@ -5,6 +5,12 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light dark">
+  <script>
+    try {
+      const appearance = localStorage.getItem("appearance");
+      if (appearance === "dark" || appearance === "light") document.documentElement.dataset.theme = appearance;
+    } catch { /* Use system appearance when storage is unavailable. */ }
+  </script>
   <title>{{ .Title }} · {{ $profile.affiliation }}</title>
   <meta name="description" content="{{ .Description }}">
   <link rel="canonical" href="{{ .Permalink }}">
