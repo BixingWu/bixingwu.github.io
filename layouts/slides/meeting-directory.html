@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="{{ site.Language.Lang }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="light dark">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <meta name="referrer" content="no-referrer">
+  <script>
+    try {
+      const theme = localStorage.getItem("appearance");
+      if (theme === "light" || theme === "dark") document.documentElement.dataset.theme = theme;
+    } catch { /* Use the system theme. */ }
+  </script>
+  <title>{{ .Title }} · {{ site.Title }}</title>
+  <link rel="icon" href="{{ "assets/icon.png" | relURL }}" type="image/png">
+  {{ with resources.Get "style.css" | fingerprint }}<link rel="stylesheet" href="{{ .RelPermalink }}">{{ end }}
+  {{ with resources.Get "assets/meeting-directory.css" | fingerprint }}<link rel="stylesheet" href="{{ .RelPermalink }}">{{ end }}
+  {{ with resources.Get "assets/paper-reader.js" | fingerprint }}<script src="{{ .RelPermalink }}" defer></script>{{ end }}
+</head>
+<body class="meeting-directory">
+  <a class="skip" href="#main">Skip to content</a>
+  <svg class="symbols" aria-hidden="true">
+    <symbol id="moon" viewBox="0 0 24 24"><path d="M20.5 15.1A8.6 8.6 0 0 1 8.9 3.5a8.7 8.7 0 1 0 11.6 11.6z"/></symbol>
+    <symbol id="sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"/></symbol>
+    <symbol id="lock" viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></symbol>
+    <symbol id="slides-icon" viewBox="0 0 24 24"><rect x="2.5" y="4" width="19" height="13.5" rx="2"/><path d="M7 20.5h10M12 17.5v3"/></symbol>
+    <symbol id="forward" viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></symbol>
+  </svg>
+  <header class="directory-bar">
+    <div class="directory-width">
+      <a class="home-link" href="{{ site.Home.RelPermalink }}">{{ site.Title }}</a>
+      <button id="theme-toggle" type="button" hidden aria-label="Switch appearance" title="Switch appearance"><svg class="icon" aria-hidden="true"><use href="#moon"/></svg></button>
+    </div>
+  </header>
+  <main id="main" class="directory-width directory-main" tabindex="-1">
+    <h1>{{ .Title }}</h1>
+    {{ $projects := where (where .RegularPages "Params.project" "ne" nil) "Params.report_id" "ne" nil }}
+    {{ if $projects }}
+    <p class="directory-intro">Choose a project and enter its access code to view the slides.</p>
+    <ul id="meeting-projects" aria-label="Projects">
+      {{ range sort $projects "Params.project" }}
+      <li>
+        <a class="meeting-project" href="{{ .RelPermalink }}">
+          <span class="project-mark" aria-hidden="true"><svg class="icon"><use href="#slides-icon"/></svg></span>
+          <span class="project-name">{{ .Params.project }}</span>
+          <span class="project-access"><svg class="icon" aria-hidden="true"><use href="#lock"/></svg>Private</span>
+          <svg class="icon project-chevron" aria-hidden="true"><use href="#forward"/></svg>
+        </a>
+      </li>
+      {{ end }}
+    </ul>
+    {{ else }}
+    <p>No group meetings are listed yet.</p>
+    {{ end }}
+  </main>
+</body>
+</html>

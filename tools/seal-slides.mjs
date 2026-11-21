@@ -5,15 +5,15 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const repository = await realpath(fileURLToPath(new URL('../', import.meta.url)));
-function manifest(project, id) {
+function manifest(project, id, listed = Boolean(project)) {
   const routing = project ? `type: slides
 url: /GroupMeeting/${project}/
 report_id: "${id}"
 ` : '';
   return `---
 title: Shared slides
-${routing}build:
-  list: never
+${routing}${listed ? `project: "${project}"\n` : ''}build:
+  list: ${listed ? 'local' : 'never'}
 ${project ? '  publishResources: false\n' : ''}sitemap:
   disable: true
 ---
@@ -144,7 +144,8 @@ async function replaceProject(staging, destination, project, filename) {
   if (!(await lstat(index)).isFile()) throw new Error('This project has no regular slide manifest.');
   const current = await readFile(index, 'utf8');
   const oldId = /^report_id: "([0-9a-f]{32})"$/m.exec(current)?.[1];
-  if (!oldId || current !== manifest(project, oldId)) {
+  // Accept existing bundles created before the project directory was introduced.
+  if (!oldId || (current !== manifest(project, oldId) && current !== manifest(project, oldId, false))) {
     throw new Error('This directory is not a project managed by the slide packager.');
   }
 

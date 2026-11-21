@@ -10,7 +10,7 @@ node tools/seal-slides.mjs "/absolute/path/outside/the-site/report.html"
 
 终端将显示带共享口令的完整链接。将链接私下保存并交给受邀者。按网站原有流程发布新生成的 `content/slides/<id>/index.md` 与 `deck.bin`。标题统一为 `Shared slides`，Hugo 会将页面排除在列表和站点地图外。原稿文件名、标题和口令均不会写入这两个文件。
 
-同一研究项目也可以使用固定路径。以下命令创建 `/GroupMeeting/Ocula/`。项目名公开且区分大小写，可使用字母、数字和内嵌连字符，以字母开头。入口 `/GroupMeeting/` 只提供打开私下分享链接的提示。
+同一研究项目也可以使用固定路径。以下命令创建 `/GroupMeeting/Ocula/`。项目名公开且区分大小写，可使用字母、数字和内嵌连字符，以字母开头。`/GroupMeeting/` 会自动列出这些项目名，点击可进入对应的口令页。报告封面、预览图与正文随幻灯一起加密。
 
 ```sh
 node tools/seal-slides.mjs --project Ocula "/absolute/path/outside/the-site/report.html"

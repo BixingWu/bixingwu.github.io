@@ -1,0 +1,50 @@
+.meeting-directory {
+  min-height: 100vh;
+  background:
+    radial-gradient(ellipse 46rem 14rem at 92% 0, color-mix(in srgb, var(--apricot) 17%, transparent), transparent),
+    linear-gradient(178deg, color-mix(in srgb, var(--sky) 45%, var(--page)), var(--page) 19rem);
+}
+.directory-width {
+  width: min(52rem, calc(100% - 2 * var(--edge)));
+  margin-inline: auto;
+}
+.directory-bar { border-bottom: 1px solid var(--rule); }
+.directory-bar .home-link { display: inline-flex; }
+.directory-bar > div {
+  display: flex;
+  min-height: 3.55rem;
+  padding-top: env(safe-area-inset-top);
+  align-items: center;
+  justify-content: space-between;
+}
+.directory-main { padding-block: clamp(2.25rem, 6vw, 5rem); }
+.directory-main h1 {
+  margin-bottom: .65rem;
+  font-size: clamp(2.4rem, 5vw, 4rem);
+  line-height: 1.08;
+  letter-spacing: -.045em;
+}
+.directory-main > p { color: var(--quiet); }
+.directory-intro { margin-block-end: clamp(1.4rem, 3vw, 2.2rem); font-size: clamp(1rem, 1.5vw, 1.1rem); }
+#meeting-projects { margin: 0; padding: 0; border-bottom: 1px solid var(--rule); list-style: none; }
+#meeting-projects li { border-top: 1px solid var(--rule); }
+.meeting-project {
+  display: flex;
+  align-items: center;
+  gap: clamp(.6rem, 1.6vw, 1rem);
+  padding: 1.05rem .15rem;
+  color: var(--ink);
+  text-decoration: none;
+}
+.meeting-project:is(:hover, :focus-visible) { color: var(--blue); text-decoration: none; }
+.project-mark { display: grid; place-items: center; flex: none; width: 2.5rem; height: 2.5rem; border-radius: .55rem; color: var(--blue); background: var(--surface); }
+.project-mark .icon { width: 1.35rem; height: 1.35rem; }
+.project-name { margin-inline-end: auto; min-width: 0; overflow-wrap: anywhere; font: 580 clamp(1.15rem, 2vw, 1.4rem)/1.25 var(--display-face); letter-spacing: -.02em; }
+.meeting-project:is(:hover, :focus-visible) .project-name { text-decoration: underline; }
+.project-access { display: inline-flex; align-items: center; gap: .35rem; color: var(--quiet); font-size: .82rem; }
+.project-access .icon { width: .85rem; height: .85rem; }
+.project-chevron { flex: none; width: .86rem; height: .86rem; color: var(--blue); }
+@media (prefers-reduced-motion: no-preference) {
+  .project-chevron { transition: transform .18s var(--ease); }
+  .meeting-project:is(:hover, :focus-visible) .project-chevron { transform: translateX(.15rem); }
+}
