@@ -1,0 +1,82 @@
+[
+  {
+    "id": "abstract1",
+    "title": "Abstract"
+  },
+  {
+    "id": "S1",
+    "title": "1 Introduction"
+  },
+  {
+    "id": "S2",
+    "title": "2 HuPER overview"
+  },
+  {
+    "id": "S3",
+    "title": "3 HuPER-Recognizer"
+  },
+  {
+    "id": "S4",
+    "title": "4 HuPER-Perceiver"
+  },
+  {
+    "id": "S5",
+    "title": "5 HuPER-Scheduler"
+  },
+  {
+    "id": "S6",
+    "title": "6 Experimental setup"
+  },
+  {
+    "id": "S7",
+    "title": "7 Results"
+  },
+  {
+    "id": "S8",
+    "title": "8 Understanding HuPER-Recognizer Gains"
+  },
+  {
+    "id": "S9",
+    "title": "9 Conclusion and Limitations"
+  },
+  {
+    "id": "bib",
+    "title": "References"
+  },
+  {
+    "id": "A1",
+    "title": "Appendix A Related Work"
+  },
+  {
+    "id": "A2",
+    "title": "Appendix B Doubly Robust Consistency of HuPER Corrector"
+  },
+  {
+    "id": "A3",
+    "title": "Appendix C Algorithm"
+  },
+  {
+    "id": "A4",
+    "title": "Appendix D Zero-shot alignment to acoustic and articulatory references"
+  },
+  {
+    "id": "A5",
+    "title": "Appendix E Phonetic Feature Error Rate (PFER)"
+  },
+  {
+    "id": "A6",
+    "title": "Appendix F Failure cases study"
+  },
+  {
+    "id": "A7",
+    "title": "Appendix G Analysis details for understanding HuPER-Recognizer gains"
+  },
+  {
+    "id": "A8",
+    "title": "Appendix H Broader Impacts"
+  },
+  {
+    "id": "Ax1",
+    "title": "NeurIPS Paper Checklist"
+  }
+]

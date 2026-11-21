@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="light dark">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src data:; base-uri 'none'; form-action 'none'">
+  <title>Group meeting</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --page: light-dark(#f6f8f7, #111e29);
+      --ink: light-dark(#243a47, #f0f4f3);
+      --muted: light-dark(#516675, #b1c3cd);
+      --accent: light-dark(#325e77, #a4d1df);
+      --line: light-dark(#b8cbd3, #415666);
+      --wash: light-dark(#e6eff1, #1a2e3b);
+      --edge: clamp(1.2rem, 6vw, 5rem);
+      font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+    }
+    :root[data-theme="light"] { color-scheme: light; }
+    :root[data-theme="dark"] { color-scheme: dark; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--page); color: var(--ink); }
+    main { min-height: 0; touch-action: pan-y pinch-zoom; }
+    .slide {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      min-height: min(100vh, 48rem);
+      padding: clamp(1.5rem, 6vh, 4rem) max(var(--edge), calc((100% - 69rem) / 2));
+      border-bottom: 1px solid var(--line);
+      overflow-wrap: anywhere;
+    }
+    .slide > * { max-width: 44rem; margin: 0; }
+    .slide > * + * { margin-top: 1rem; }
+    .slide h1, .slide h2 { max-width: 20ch; line-height: 1.08; letter-spacing: -.045em; text-wrap: balance; }
+    .slide h1 { font-size: clamp(2.65rem, 6.8vw, 5.7rem); }
+    .slide h2 { font-size: clamp(2rem, 4.3vw, 3.7rem); }
+    .slide p, .slide li { font-size: clamp(1rem, 2vw, 1.5rem); line-height: 1.55; }
+    .slide .byline, figcaption { color: var(--muted); }
+    .cover { background: linear-gradient(160deg, var(--wash), var(--page) 68%); }
+    figure { max-width: 52rem; }
+    figure img { display: block; max-width: 100%; max-height: 48vh; width: auto; height: auto; }
+    figcaption { margin-top: .45rem; font-size: .9rem; }
+    body.presenting { height: 100vh; height: 100dvh; display: grid; grid-template-rows: minmax(0, 1fr) auto; }
+    .presenting main { overflow-y: auto; }
+    .presenting .slide { min-height: 100%; border: 0; }
+    nav {
+      display: flex; align-items: center; gap: .45rem;
+      padding: .4rem max(var(--edge), env(safe-area-inset-right)) max(.4rem, env(safe-area-inset-bottom)) max(var(--edge), env(safe-area-inset-left));
+      border-top: 1px solid var(--line);
+    }
+    nav [role="status"] { min-width: 3.3rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+    button { min-width: 2.75rem; min-height: 2.75rem; padding: .2rem .6rem; border: 0; border-radius: .3rem; background: transparent; color: var(--accent); font: inherit; cursor: pointer; }
+    button:hover:enabled, button:focus-visible { background: var(--wash); }
+    button:focus-visible { outline: 2px solid currentColor; outline-offset: -2px; }
+    button:disabled { opacity: .35; cursor: default; }
+    #theme { margin-inline-start: auto; }
+    [hidden] { display: none !important; }
+  </style>
+</head>
+<body>
+  <main id="slides" aria-label="Slides">
+    <!-- Copy a section to add a slide. The controls count the sections automatically. -->
+    <section class="slide cover">
+      <h1>Talk title</h1>
+      <p class="byline">Presenter · Meeting date</p>
+    </section>
+    <section class="slide">
+      <h2>Research question</h2>
+      <p>State the question and why it matters.</p>
+    </section>
+    <section class="slide">
+      <h2>Result and next step</h2>
+      <p>Describe one finding and the experiment it motivates.</p>
+      <!-- To include an offline figure, replace BASE64 with your PNG data and uncomment.
+      <figure>
+        <img src="data:image/png;base64,BASE64" alt="Describe the figure">
+        <figcaption>Figure caption</figcaption>
+      </figure>
+      -->
+    </section>
+  </main>
+  <nav hidden aria-label="Presentation controls">
+    <span id="position" role="status" aria-live="polite"></span>
+    <button id="previous" type="button" aria-label="Previous slide" title="Previous slide">←</button>
+    <button id="next" type="button" aria-label="Next slide" title="Next slide">→</button>
+    <button id="theme" type="button">Switch theme</button>
+  </nav>
+  <script>
+    const deck = document.getElementById("slides");
+    const slides = [...deck.children].filter(element => element.matches("section.slide"));
+    const previous = document.getElementById("previous");
+    const next = document.getElementById("next");
+    const position = document.getElementById("position");
+    const theme = document.getElementById("theme");
+    const systemDark = matchMedia("(prefers-color-scheme: dark)");
+    let current = 0;
+
+    function displaySlide(number, acknowledge = false) {
+      if (!Number.isSafeInteger(number) || !slides.length) return;
+      number = Math.max(1, Math.min(number, slides.length));
+      if (number === current && !acknowledge) return;
+      const initial = current === 0;
+      if (number !== current) {
+        current = number;
+        slides.forEach((slide, index) => { slide.hidden = index !== number - 1; });
+        deck.scrollTop = 0;
+        position.textContent = number + " / " + slides.length;
+        position.setAttribute("aria-label", "Slide " + number + " of " + slides.length);
+        previous.disabled = number === 1;
+        next.disabled = number === slides.length;
+      }
+      if (!initial && window.parent !== window) {
+        window.parent.postMessage({ type: "bixing-slide:change", number }, "*");
+      }
+    }
+    previous.addEventListener("click", () => displaySlide(current - 1));
+    next.addEventListener("click", () => displaySlide(current + 1));
+    window.addEventListener("message", event => {
+      if (window.parent !== window && event.source === window.parent && event.data?.type === "bixing-slide:go") {
+        displaySlide(event.data.number, true);
+      }
+    });
+
+    document.addEventListener("keydown", event => {
+      if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey ||
+          event.target.isContentEditable || event.target.closest("input, select, textarea")) return;
+      const target = { ArrowLeft: current - 1, ArrowRight: current + 1, Home: 1, End: slides.length }[event.key];
+      if (target === undefined) return;
+      event.preventDefault();
+      displaySlide(target);
+    });
+    let touchStart;
+    deck.addEventListener("pointerdown", event => {
+      if (event.pointerType !== "touch") return;
+      if (!event.isPrimary || event.target.closest("a, button, input, select, textarea, [contenteditable]")) {
+        touchStart = null;
+        return;
+      }
+      touchStart = { id: event.pointerId, x: event.clientX, y: event.clientY };
+    });
+    deck.addEventListener("pointercancel", () => { touchStart = null; });
+    deck.addEventListener("pointerup", event => {
+      if (!touchStart || touchStart.id !== event.pointerId) return;
+      const dx = event.clientX - touchStart.x;
+      const dy = event.clientY - touchStart.y;
+      touchStart = null;
+      if (Math.abs(dx) > 52 && Math.abs(dx) > Math.abs(dy) * 1.5) displaySlide(current + (dx < 0 ? 1 : -1));
+    });
+
+    function isDark() {
+      const choice = document.documentElement.dataset.theme;
+      return choice ? choice === "dark" : systemDark.matches;
+    }
+    function labelTheme() { theme.textContent = isDark() ? "Light theme" : "Dark theme"; }
+    theme.addEventListener("click", () => {
+      document.documentElement.dataset.theme = isDark() ? "light" : "dark";
+      labelTheme();
+    });
+    systemDark.addEventListener("change", labelTheme);
+    labelTheme();
+    if (slides.length) {
+      document.body.classList.add("presenting");
+      document.querySelector("nav").hidden = false;
+      displaySlide(1);
+    }
+  </script>
+</body>
+</html>

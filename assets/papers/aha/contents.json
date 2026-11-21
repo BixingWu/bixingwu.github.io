@@ -1,0 +1,58 @@
+[
+  {
+    "id": "abstract1",
+    "title": "Abstract"
+  },
+  {
+    "id": "S1",
+    "title": "1 Introduction"
+  },
+  {
+    "id": "S2",
+    "title": "2 Related Works"
+  },
+  {
+    "id": "S3",
+    "title": "3 Method"
+  },
+  {
+    "id": "S4",
+    "title": "4 Experiment"
+  },
+  {
+    "id": "S5",
+    "title": "5 Conclusion"
+  },
+  {
+    "id": "bib",
+    "title": "References"
+  },
+  {
+    "id": "A1",
+    "title": "Appendix A Implementation of Adversarial Disentanglement (Section 3.3)"
+  },
+  {
+    "id": "A2",
+    "title": "Appendix B Details of CMG Downstream Tasks"
+  },
+  {
+    "id": "A3",
+    "title": "Appendix C Details of Talking Face Disentanglement Experiment"
+  },
+  {
+    "id": "A4",
+    "title": "Appendix D More Ablation Studies"
+  },
+  {
+    "id": "A5",
+    "title": "Appendix E Training Details"
+  },
+  {
+    "id": "A6",
+    "title": "Appendix F Existing Assets and Licenses"
+  },
+  {
+    "id": "A7",
+    "title": "Appendix G Broader Impacts"
+  }
+]

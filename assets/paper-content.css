@@ -1,0 +1,71 @@
+/* LaTeXML's semantic classes come from the published paper. */
+.paper-body .ltx_title { color: var(--ink); font-family: var(--display-face, system-ui); line-height: 1.25; text-align: start; }
+.paper-body :is(.ltx_title_section, .ltx_title_appendix, .ltx_title_bibliography) { margin: 2.7rem 0 .9rem; font-size: clamp(1.45rem, 2.2vw, 1.85rem); letter-spacing: -.025em; }
+.paper-body :is(.ltx_title_subsection, .ltx_title_subsubsection, .ltx_title_paragraph) { margin: 1.55rem 0 .5rem; font-size: 1.18em; letter-spacing: -.012em; }
+.paper-body :is(.ltx_title_subsubsection, .ltx_title_paragraph, .ltx_runin) { font-size: 1em; }
+.paper-body .ltx_runin { margin: 1.1em 0 .25em; }
+.paper-body .ltx_title > .ltx_tag { margin-inline-end: .24em; }
+.paper-body .ltx_title_abstract { margin: 0 0 .6rem; font-size: 1.35rem; }
+.paper-body .ltx_p { margin: .66em 0; }
+.paper-body .ltx_p:has(math), .paper-body .ltx_listingline { overflow-x: auto; }
+.paper-body .ltx_ref { overflow-wrap: anywhere; }
+.paper-body cite { font-style: normal; white-space: nowrap; }
+.paper-body .ltx_font_bold { font-weight: 650; }
+.paper-body .ltx_font_medium { font-weight: 400; }
+.paper-body .ltx_font_italic { font-style: italic; }
+.paper-body .ltx_font_typewriter { font-family: ui-monospace, monospace; font-size: .91em; }
+.paper-body [style*="--ltx-fg-color"] {
+  color: light-dark(color-mix(in srgb, var(--ltx-fg-color) 77%, black), color-mix(in srgb, var(--ltx-fg-color) 44%, white));
+}
+.paper-body :is(.ltx_itemize, .ltx_enumerate) { margin: .7em 0; padding-inline-start: 1.55em; }
+.paper-body .ltx_item { position: relative; list-style: none; }
+.paper-body .ltx_item > .ltx_tag_item { position: absolute; inset-inline-end: calc(100% + .4em); color: var(--quiet); white-space: nowrap; }
+.paper-body .ltx_quote { margin: 1rem 0; border-inline-start: 2px solid var(--rule); padding-inline-start: 1rem; }
+
+.paper-body figure { margin: 1.65rem 0; min-width: 0; }
+.paper-body .ltx_graphics { display: block; width: 100%; max-width: 100%; height: auto; margin-inline: auto; background: white; }
+.paper-body .ltx_caption { color: var(--quiet); font-size: .9rem; line-height: 1.5; text-align: start; }
+.paper-body .ltx_caption:not(:first-child) { margin-block-start: .65rem; }
+.paper-body .ltx_caption:not(:last-child) { margin-block-end: .6rem; }
+.paper-body .ltx_caption > .ltx_tag { color: var(--ink); font-weight: 650; }
+.paper-body .ltx_flex_figure { display: flex; flex-wrap: wrap; gap: 1rem; }
+.paper-body .ltx_flex_cell { flex: 1 1 12rem; min-width: 0; }
+.paper-body .ltx_flex_size_1 { flex-basis: 100%; }
+.paper-body .ltx_flex_break { display: none; }
+.paper-body .ltx_flex_cell > figure { margin: 0; }
+.paper-body .ltx_flex_table { display: block; }
+.paper-body .ltx_flex_table > .ltx_flex_cell + .ltx_flex_cell { margin-block-start: 1.2rem; }
+
+.paper-body .ltx_transformed_inner { display: block; }
+.paper-body .paper-scroll { min-width: 0; max-width: 100%; overflow-x: auto; overscroll-behavior-inline: contain; }
+.paper-body .paper-scroll:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+.paper-body .ltx_tabular { width: max-content; max-width: 100%; margin-inline: auto; border-block: 1px solid var(--quiet); border-collapse: collapse; font-size: .875rem; line-height: 1.4; font-variant-numeric: tabular-nums; overflow-wrap: normal; }
+.paper-body .ltx_tabular :is(th, td) { padding: .34em .53em; vertical-align: middle; text-align: start; }
+.paper-body .ltx_tabular th { color: var(--ink); font-weight: 600; }
+.paper-body .ltx_tabular :is(.ltx_border_t, .ltx_border_tt) { border-block-start: 1px solid var(--rule); }
+.paper-body .ltx_tabular :is(.ltx_border_b, .ltx_border_bb) { border-block-end: 1px solid var(--rule); }
+.paper-body .ltx_tabular .ltx_align_center { text-align: center; }
+.paper-body .ltx_tabular .ltx_align_right { text-align: end; }
+.paper-body math { font-family: "STIX Two Math", "Cambria Math", math; }
+.paper-body .ltx_eqn_table { width: max-content; min-width: 100%; margin: .7rem 0; border-collapse: collapse; }
+.paper-body .ltx_eqn_cell { padding: .15em 0; text-align: center; vertical-align: middle; }
+.paper-body .ltx_eqn_cell math[display="block"] { width: max-content; margin-inline: auto; }
+.paper-body :is(.ltx_eqn_center_padleft, .ltx_eqn_center_padright) { width: 50%; }
+.paper-body .ltx_eqn_eqno { padding-inline-start: .9em; text-align: right; white-space: nowrap; font-size: .86em; color: var(--quiet); }
+.paper-body .ltx_listing { padding: .7rem 0; border-block: 1px solid var(--rule); }
+.paper-body .ltx_listingline { padding: .13em 0; font-size: .94em; line-height: 1.5; }
+
+.paper-body .ltx_biblist { padding: 0; list-style: none; font-size: .94em; }
+.paper-body .ltx_bibitem { position: relative; margin-block: .9em; padding-inline-start: 2.75em; }
+.paper-body .ltx_tag_bibitem { position: absolute; inset-inline-start: 0; color: var(--quiet); font-variant-numeric: tabular-nums; }
+.paper-body .ltx_bib_title { color: var(--ink); }
+.paper-body .ltx_bib_cited { display: block; margin-top: .12em; font-size: .88em; color: var(--quiet); }
+.paper-body .ltx_note { color: var(--quiet); font-size: .85em; }
+.paper-body .ltx_role_footnotetext { display: block; }
+.paper-body .ltx_note_content > :is(.ltx_note_mark, .ltx_note_type, .ltx_tag_note) { display: none; }
+.paper-body .ltx_note_outer { margin-inline-start: .22em; }
+.paper-body .ltx_role_footnote .ltx_note_outer::before { content: "("; }
+.paper-body .ltx_role_footnote .ltx_note_outer::after { content: ")"; }
+@media (max-width: 40rem) {
+  .paper-body :is(.ltx_title_section, .ltx_title_appendix, .ltx_title_bibliography) { margin-top: 2.05rem; }
+}

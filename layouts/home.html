@@ -91,6 +91,7 @@
         <h2 id="works-heading">Selected publications</h2>
         {{ $hasEqualContribution := false }}
         {{ range .Params.publications }}
+        {{ $webPaper := site.GetPage (printf "/paper/%s" (.short_name | urlize)) }}
         {{ $preview := .figure }}
         {{ $sources := slice }}
         {{ $width := .figure_width }}
@@ -107,12 +108,7 @@
         {{ end }}
         {{ $titleID := printf "paper-%s" (.short_name | urlize) }}
         <article class="paper" aria-labelledby="{{ $titleID }}">
-          <h3 class="paper-title" id="{{ $titleID }}"><a href="{{ .url }}">
-            {{- range $i, $word := split .title " " -}}
-              {{- if $i }} {{ end -}}
-              {{- if in $word "-" }}<span>{{ $word }}</span>{{ else }}{{ $word }}{{ end -}}
-            {{- end -}}
-          </a></h3>
+          <h3 class="paper-title" id="{{ $titleID }}"><a href="{{ with $webPaper }}{{ .RelPermalink }}{{ else }}{{ .url }}{{ end }}">{{ partial "paper-title.html" .title }}</a></h3>
           <figure class="paper-visual">
             <figcaption class="venue">{{ .venue }}</figcaption>
             <a href="{{ .figure }}" class="figure-link" data-paper="{{ .short_name }}" data-source="{{ .figure_source }}" aria-label="Open full-size {{ .short_name }} pipeline" aria-describedby="{{ $titleID }}-figure">
@@ -131,7 +127,8 @@
               {{- end -}}
             </p>
             <div class="resources" role="group" aria-label="Resources for {{ .short_name }}">
-              {{ with .pdf }}<a href="{{ . }}">Paper</a>{{ end }}
+              {{ with $webPaper }}<a href="{{ .RelPermalink }}">Web</a>{{ end }}
+              {{ with .pdf }}<a href="{{ . }}">{{ if $webPaper }}PDF{{ else }}Paper{{ end }}</a>{{ end }}
               {{ with .code }}<a href="{{ . }}">Code</a>{{ end }}
               {{ with .bibtex }}<a href="{{ . }}" download>BibTeX</a>{{ end }}
             </div>

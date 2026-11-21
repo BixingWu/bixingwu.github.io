@@ -1,0 +1,58 @@
+{{- $paper := dict -}}
+{{- $title := .Title -}}
+{{- if .IsPage -}}
+  {{- $paper = index (where site.Home.Params.publications "short_name" .Title) 0 -}}
+  {{- $title = $paper.title -}}
+{{- end -}}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="light dark">
+  <script>
+    try {
+      const theme = localStorage.getItem("appearance");
+      if (theme === "light" || theme === "dark") document.documentElement.dataset.theme = theme;
+    } catch { /* Use the system theme. */ }
+  </script>
+  <title>{{ $title }} · {{ site.Title }}</title>
+  <meta name="description" content="{{ .Description }}">
+  <link rel="canonical" href="{{ .Permalink }}">
+  <meta property="og:type" content="{{ if .IsPage }}article{{ else }}website{{ end }}">
+  <meta property="og:title" content="{{ $title }}">
+  <meta property="og:description" content="{{ .Description }}">
+  <meta property="og:url" content="{{ .Permalink }}">
+  {{ with $paper }}
+  <meta property="og:image" content="{{ .figure | absURL }}">
+  <meta property="og:image:alt" content="{{ .figure_alt }}">
+  <meta name="citation_title" content="{{ .title }}">
+  {{ range .authors }}<meta name="citation_author" content="{{ strings.TrimSuffix "*" . }}">{{ end }}
+  <meta name="citation_pdf_url" content="{{ replace $.Params.source_html "/html/" "/pdf/" }}">
+  {{ end }}
+  <link rel="icon" href="{{ "assets/icon.png" | relURL }}" type="image/png">
+  {{ with resources.Get "style.css" | fingerprint }}<link rel="stylesheet" href="{{ .RelPermalink }}">{{ end }}
+  {{ with resources.Get "assets/paper-reader.css" | fingerprint }}<link rel="stylesheet" href="{{ .RelPermalink }}">{{ end }}
+  {{ if .IsPage }}{{ with resources.Get "assets/paper-content.css" }}<link rel="stylesheet" href="{{ (. | fingerprint).RelPermalink }}">{{ end }}{{ end }}
+  {{ with resources.Get "assets/paper-reader.js" | fingerprint }}<script src="{{ .RelPermalink }}" defer></script>{{ end }}
+</head>
+<body class="reader">
+  <a class="skip" href="#main">Skip to content</a>
+  <svg class="symbols" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <symbol id="moon" viewBox="0 0 24 24"><path d="M20.5 15.1A8.6 8.6 0 0 1 8.9 3.5a8.7 8.7 0 1 0 11.6 11.6z"/></symbol>
+    <symbol id="sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"/></symbol>
+  </svg>
+  <header class="reader-bar">
+    <div class="reader-width reader-bar-inner">
+      <div class="reader-path">
+        <a class="reader-home" href="{{ site.Home.RelPermalink }}">{{ site.Title }}</a>
+        <span aria-hidden="true">/</span>
+        <a href="{{ (site.GetPage "/paper").RelPermalink }}"{{ if .IsSection }} aria-current="page"{{ end }}>Papers</a>
+        {{ if .IsPage }}<span aria-hidden="true">/</span><span aria-current="page">{{ .Title }}</span>{{ end }}
+      </div>
+      <button id="theme-toggle" type="button" hidden aria-label="Switch appearance" title="Switch appearance"><svg class="icon" aria-hidden="true"><use href="#moon"/></svg></button>
+    </div>
+  </header>
+  {{ block "main" . }}{{ end }}
+</body>
+</html>

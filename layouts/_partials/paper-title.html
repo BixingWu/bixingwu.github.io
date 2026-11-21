@@ -1,0 +1,4 @@
+{{- range $i, $word := split . " " -}}
+  {{- if $i }} {{ end -}}
+  {{- if in $word "-" }}<span>{{ $word }}</span>{{ else }}{{ $word }}{{ end -}}
+{{- end -}}
