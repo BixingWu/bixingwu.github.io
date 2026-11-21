@@ -39,10 +39,26 @@ const sections = links.map(link => document.querySelector(link.hash));
 const bar = document.querySelector(".site-bar");
 const cover = document.querySelector(".cover");
 let scheduled = false;
+let currentLink = links[0];
+let hoverLink = null;
+let destination = null;
+let markerLeft = 0;
+
+function positionMarker() {
+  const focused = nav.querySelector("a:focus-visible");
+  const marker = focused || hoverLink || currentLink;
+  const left = marker.offsetLeft;
+  const right = nav.clientWidth - left - marker.offsetWidth;
+  if (left !== markerLeft) nav.dataset.direction = left < markerLeft ? "back" : "forward";
+  markerLeft = left;
+  nav.style.setProperty("--mark-left", left + "px");
+  nav.style.setProperty("--mark-right", right + "px");
+  nav.dataset.marker = "";
+}
 
 function updateNavigation() {
   const scroll = Math.max(0, window.scrollY);
-  const progress = Math.min(1, scroll / 180);
+  const progress = Math.min(1, scroll / 235);
   const fold = reducedMotion.matches ? Number(scroll > 0) : progress * progress * (3 - 2 * progress);
   const drift = reducedMotion.matches ? 0 : Math.min(1, scroll / cover.offsetHeight);
   const threshold = bar.offsetHeight + 24;
@@ -56,14 +72,21 @@ function updateNavigation() {
     const target = links.findIndex(link => link.hash === location.hash);
     active = target >= 0 && sections[target].getBoundingClientRect().top >= threshold - 16 ? target : links.length - 1;
   }
+  if (destination) {
+    // A native smooth scroll may pass another section on the way to the clicked anchor.
+    active = links.indexOf(destination);
+    const section = sections[active];
+    const inset = parseFloat(getComputedStyle(section).scrollMarginTop) || 0;
+    const top = scroll + section.getBoundingClientRect().top - inset;
+    const limit = Math.max(0, root.scrollHeight - innerHeight);
+    if (Math.abs(scroll - Math.max(0, Math.min(top, limit))) < 2) destination = null;
+  }
+  currentLink = links[active];
   links.forEach((link, index) => {
     if (index === active) link.setAttribute("aria-current", "location");
     else link.removeAttribute("aria-current");
   });
-  const marker = links[active];
-  nav.style.setProperty("--mark-x", marker.offsetLeft + "px");
-  nav.style.setProperty("--mark-width", marker.offsetWidth + "px");
-  nav.dataset.marker = "";
+  positionMarker();
   bar.style.setProperty("--fold", fold.toFixed(3));
   cover.style.setProperty("--drift", drift.toFixed(3));
   scheduled = false;
@@ -78,7 +101,33 @@ function scheduleNavigation() {
 window.addEventListener("scroll", scheduleNavigation, { passive: true });
 window.addEventListener("resize", scheduleNavigation);
 window.addEventListener("load", scheduleNavigation);
-window.addEventListener("hashchange", scheduleNavigation);
+window.addEventListener("hashchange", () => {
+  destination = links.find(link => link.hash === location.hash) || null;
+  scheduleNavigation();
+});
+function resumeScrollTracking() {
+  destination = null;
+  hoverLink = null;
+  scheduleNavigation();
+}
+window.addEventListener("wheel", resumeScrollTracking, { passive: true });
+window.addEventListener("touchmove", resumeScrollTracking, { passive: true });
+window.addEventListener("keydown", event => {
+  if (["ArrowUp", "ArrowDown", "PageUp", "PageDown", "Home", "End", " "].includes(event.key)) resumeScrollTracking();
+});
+nav.addEventListener("click", event => {
+  if (event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) return;
+  destination = event.target.closest("a");
+  scheduleNavigation();
+});
+nav.addEventListener("pointerover", event => {
+  if (event.pointerType === "touch") return;
+  hoverLink = event.target.closest("a");
+  positionMarker();
+});
+nav.addEventListener("pointerleave", () => { hoverLink = null; positionMarker(); });
+nav.addEventListener("focusin", positionMarker);
+nav.addEventListener("focusout", scheduleNavigation);
 reducedMotion.addEventListener("change", scheduleNavigation);
 scheduleNavigation();
 
@@ -98,14 +147,24 @@ if (dialog && typeof dialog.showModal === "function") {
     const frame = dialog.getBoundingClientRect();
     const full = image.getBoundingClientRect();
     if (!thumb.width || !thumb.height || !full.width || !full.height) return null;
-    // A height-limited image can have empty space on either side of the bitmap.
-    const bitmapWidth = Math.min(full.width, full.height * thumb.width / thumb.height);
-    const scale = thumb.width / bitmapWidth;
-    const x = thumb.left + thumb.width / 2 - frame.left - (full.left + full.width / 2 - frame.left) * scale;
-    const y = thumb.top + thumb.height / 2 - frame.top - (full.top + full.height / 2 - frame.top) * scale;
-    const small = { transform: `translate(${x}px, ${y}px) scale(${scale})` };
-    const large = { transform: "none" };
-    return dialog.animate(returning ? [large, small] : [small, large], {
+    // Use the painted bitmap inside object-fit: contain, excluding toolbar and padding.
+    const ratio = thumb.width / thumb.height;
+    const width = Math.min(full.width, full.height * ratio);
+    const height = width / ratio;
+    const left = full.left - frame.left + (full.width - width) / 2;
+    const top = full.top - frame.top + (full.height - height) / 2;
+    const scale = thumb.width / width;
+    const x = thumb.left - frame.left - left * scale;
+    const y = thumb.top - frame.top - top * scale;
+    const small = {
+      transform: `translate(${x}px, ${y}px) scale(${scale})`,
+      clipPath: `inset(${top}px ${frame.width - left - width}px ${frame.height - top - height}px ${left}px)`,
+      opacity: 0
+    };
+    // Allow the panel shadow to appear as its frame opens around the figure.
+    const large = { transform: "none", clipPath: "inset(-6rem)", opacity: 1 };
+    const handoff = { offset: returning ? .95 : .05, opacity: 1 };
+    return dialog.animate(returning ? [large, handoff, small] : [small, handoff, large], {
       duration: returning ? 280 : 350,
       easing: returning ? "cubic-bezier(.30,.08,.28,1)" : "cubic-bezier(.24,.08,.20,1)",
       fill: "both"

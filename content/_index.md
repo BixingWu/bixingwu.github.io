@@ -58,6 +58,7 @@ params:
   experience:
     - institution: Zhejiang University
       logo: assets/zju-mark.png
+      monochrome: true
       homepage: https://www.zju.edu.cn/english/
       dates: Sep 2023 – present
       role: B.Eng. student in Microelectronic Science and Engineering

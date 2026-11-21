@@ -56,7 +56,7 @@
         <div class="research">
           <div class="bio">{{ .Content }}</div>
           <div class="profile-links">
-            <a class="email" href="mailto:{{ $profile.email }}" aria-label="Email {{ .Title }} at {{ $profile.email }}" title="{{ $profile.email }}"><svg class="icon" aria-hidden="true"><use href="#mail"/></svg><span class="email-address">{{ $profile.email }}</span><span class="email-label">Email</span></a>
+            <a href="mailto:{{ $profile.email }}" title="{{ $profile.email }}"><svg class="icon" aria-hidden="true"><use href="#mail"/></svg>Email</a>
             {{ with $profile.scholar }}<a href="{{ . }}"><svg class="icon" aria-hidden="true"><use href="#scholar"/></svg>Google Scholar</a>{{ end }}
             {{ with $profile.github }}<a href="{{ . }}"><svg class="icon" aria-hidden="true"><use href="#code"/></svg>GitHub</a>{{ end }}
           </div>
@@ -101,7 +101,9 @@
         <h2 id="experience-heading">Education &amp; experience</h2>
         {{ range .Params.experience }}
         <div class="placement">
-          <span class="school-mark" aria-hidden="true">{{ with .logo }}<img src="{{ . }}" width="56" height="56" loading="lazy" alt="">{{ end }}</span>
+          <span class="school-mark{{ if .monochrome }} monochrome{{ end }}" aria-hidden="true">
+            {{ with .logo }}<img src="{{ . }}?v={{ substr (sha256 (readFile .)) 0 12 }}" width="56" height="56" loading="lazy" alt="">{{ end }}
+          </span>
           <div class="place-copy">
             <h3>{{ if .homepage }}<a href="{{ .homepage }}">{{ .institution }}</a>{{ else }}{{ .institution }}{{ end }}</h3>
             <p>{{ .role }}</p>{{ with .detail }}<p class="detail">{{ . }}</p>{{ end }}
