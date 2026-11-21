@@ -22,10 +22,6 @@
   <a class="skip" href="#main">Skip to content</a>
   <svg class="symbols" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
     <symbol id="mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="m4 7 8 6 8-6"/></symbol>
-    <symbol id="pages" viewBox="0 0 24 24"><path d="M3 5.5c3.3-1.3 6.5-.8 9 1.2 2.5-2 5.7-2.5 9-1.2v13c-3.3-1.3-6.5-.8-9 1.2-2.5-2-5.7-2.5-9-1.2zM12 7v12"/></symbol>
-    <symbol id="document" viewBox="0 0 24 24"><path d="M6 3h8l4 4v14H6zM14 3v5h4M9 12h6M9 16h6"/></symbol>
-    <symbol id="code" viewBox="0 0 24 24"><path d="m8 7-5 5 5 5m8-10 5 5-5 5m-3-13-3 19"/></symbol>
-    <symbol id="citation" viewBox="0 0 24 24"><path d="M9 3H7c-2 0-2 2-2 4v2c0 2-1 3-3 3 2 0 3 1 3 3v2c0 2 0 4 2 4h2m6-18h2c2 0 2 2 2 4v2c0 2 1 3 3 3-2 0-3 1-3 3v2c0 2 0 4-2 4h-2"/></symbol>
     <symbol id="moon" viewBox="0 0 24 24"><path d="M20.5 15.1A8.6 8.6 0 0 1 8.9 3.5a8.7 8.7 0 1 0 11.6 11.6z"/></symbol>
     <symbol id="sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"/></symbol>
   </svg>
@@ -47,13 +43,11 @@
       <div class="shell hero-inner">
         <div class="introduction">
           <div class="identity">
-            <p class="eyebrow">{{ $profile.affiliation }}</p>
             <h1 id="name">{{ .Title }}{{ with $profile.chinese_name }} <span class="native-name" lang="zh-Hans">{{ . }}</span>{{ end }}</h1>
-            <p class="role">{{ $profile.role }}</p>
+            <p class="role"><span>{{ $profile.role }}</span> <span>{{ $profile.affiliation }}</span></p>
           </div>
           <div class="bio">{{ .Content }}</div>
           <div class="contact">
-            <a class="button" href="#publications"><svg class="icon" aria-hidden="true"><use href="#pages"/></svg>View publications</a>
             <a class="email" href="mailto:{{ $profile.email }}"><svg class="icon" aria-hidden="true"><use href="#mail"/></svg>{{ $profile.email }}</a>
           </div>
         </div>
@@ -65,28 +59,33 @@
     <div class="shell">
       <section class="works" id="publications" aria-labelledby="works-heading">
         <h2 id="works-heading">Selected publications</h2>
+        {{ $hasEqualContribution := false }}
         {{ range .Params.publications }}
         <article class="paper">
           <figure class="paper-visual">
-            <a href="{{ .figure }}" class="figure-link" aria-label="Open full-size {{ .short_name }} pipeline">
+            <a href="{{ .figure }}" class="figure-link" data-paper="{{ .short_name }}" data-source="{{ .figure_source }}" aria-label="Open full-size {{ .short_name }} pipeline">
               <img class="paper-figure" src="{{ .figure }}" width="{{ .figure_width }}" height="{{ .figure_height }}" loading="lazy" alt="{{ .figure_alt }}">
             </a>
-            <figcaption><a href="{{ .figure_source }}">{{ .figure_label }}</a></figcaption>
           </figure>
           <div>
             <p class="venue">{{ .venue }}</p>
             <h3><a href="{{ .url }}">{{ .title }}</a></h3>
-            <p class="authors">{{ range $i, $author := .authors }}{{ if $i }}, {{ end }}{{ if eq (strings.TrimSuffix "*" $author) $.Title }}<strong>{{ $author }}</strong>{{ else }}{{ $author }}{{ end }}{{ end }}</p>
-            {{ with .contribution }}<p class="contribution">{{ . }}</p>{{ end }}
-            <p class="finding">{{ .summary }}</p>
+            <p class="authors">
+              {{- range $i, $author := .authors -}}
+                {{- if strings.HasSuffix $author "*" }}{{ $hasEqualContribution = true }}{{ end -}}
+                {{- if $i }}, {{ end -}}
+                {{- if eq (strings.TrimSuffix "*" $author) $.Title }}<strong>{{ $author }}</strong>{{ else }}{{ $author }}{{ end -}}
+              {{- end -}}
+            </p>
             <div class="resources" aria-label="Resources for {{ .short_name }}">
-              {{ with .pdf }}<a href="{{ . }}"><svg class="icon" aria-hidden="true"><use href="#document"/></svg>Paper</a>{{ end }}
-              {{ with .code }}<a href="{{ . }}"><svg class="icon" aria-hidden="true"><use href="#code"/></svg>Code</a>{{ end }}
-              {{ with .bibtex }}<a href="{{ . }}" download><svg class="icon" aria-hidden="true"><use href="#citation"/></svg>BibTeX</a>{{ end }}
+              {{ with .pdf }}<a href="{{ . }}">Paper</a>{{ end }}
+              {{ with .code }}<a href="{{ . }}">Code</a>{{ end }}
+              {{ with .bibtex }}<a href="{{ . }}" download>BibTeX</a>{{ end }}
             </div>
           </div>
         </article>
         {{ end }}
+        {{ if $hasEqualContribution }}{{ with .Params.contribution_note }}<p class="contribution">{{ . }}</p>{{ end }}{{ end }}
       </section>
       <section class="experience" id="experience" aria-labelledby="experience-heading">
         <h2 id="experience-heading">Education &amp; experience</h2>
@@ -100,5 +99,15 @@
     </div>
   </main>
   <footer><div class="shell footer-inner"><span>© {{ now.Year }} {{ .Title }}</span><a href="#top">Back to top</a></div></footer>
+  <dialog id="figure-dialog" aria-labelledby="figure-dialog-title">
+    <div class="figure-toolbar">
+      <h2 id="figure-dialog-title"></h2>
+      <a id="figure-source">View in paper</a>
+      <button id="figure-close" type="button">Close</button>
+    </div>
+    <div class="figure-stage">
+      <a id="figure-original" aria-label="Open full-resolution image" title="Open full-resolution image"><img id="figure-detail" alt=""></a>
+    </div>
+  </dialog>
 </body>
 </html>
