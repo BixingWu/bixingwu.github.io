@@ -13,9 +13,9 @@
     <h1 id="gate-title">{{ default .Title .Params.project }}</h1>
     <form id="unlock-form" novalidate>
       <label for="access-key">Access code</label>
-      <input id="access-key" type="password" placeholder="xxxx-xxxx-xxxx" aria-describedby="access-help unlock-status" autocomplete="off" autocorrect="off" spellcheck="false" autocapitalize="none" enterkeyhint="go" required>
+      <input id="access-key" type="password" placeholder="xxxx-xxxx-xxxx" aria-describedby="access-help unlock-status" autocomplete="off" autocorrect="off" spellcheck="false" autocapitalize="none" enterkeyhint="go" required disabled>
       <p id="access-help">You can also paste the full share link.</p>
-      <button id="unlock-slides" type="submit">Open slides</button>
+      <button id="unlock-slides" type="submit" disabled>Open slides</button>
     </form>
     <p id="unlock-status" role="status" aria-live="polite"></p>
     <noscript>Enable JavaScript to decrypt these slides on your device.</noscript>

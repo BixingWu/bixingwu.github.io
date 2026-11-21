@@ -229,5 +229,8 @@
     else applySlideHash();
   }
   window.addEventListener("hashchange", openLocation);
+  // Enable the form once a submission will be handled locally.
+  input.disabled = false;
+  button.disabled = false;
   openLocation();
 })();
