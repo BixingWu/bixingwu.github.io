@@ -30,6 +30,20 @@
   let accessCode = "";
   let viewerReady = false;
   let feedbackTimer;
+  const footer = document.getElementById("slide-footer");
+  const nav = footer.querySelector(".deck-tools");
+  const navigation = nav && createSlideNavigation(nav, {
+    step: delta => toolbarAction("step", { delta }),
+    go: number => toolbarAction("go", { number }),
+    toggle: () => toolbarAction("toggle"),
+    prepareJump: () => toolbarAction("prepare-jump")
+  });
+  nav?.querySelector("#toggle-previews").setAttribute("aria-controls", viewer.id);
+
+  function toolbarAction(action, extra = {}) {
+    if (!viewerReady || !accessCode || nav.hidden) return;
+    viewer.contentWindow.postMessage({ type: "bixing-toolbar:action", action, ...extra }, "*");
+  }
 
   function canonicalCode(value) {
     const code = (value || "").normalize("NFKC").toLowerCase()
@@ -116,10 +130,23 @@
       }
     } catch { /* The preview panel also works without persistence. */ }
     applySlideHash();
+    if (navigation) viewer.contentWindow.postMessage({ type: "bixing-toolbar:attach" }, "*");
   });
   window.addEventListener("message", event => {
     const message = event.data;
     if (!accessCode || !viewerReady || event.source !== viewer.contentWindow || event.origin !== "null") return;
+    if (navigation && message?.type === "bixing-toolbar:state") {
+      const { number, total, open } = message;
+      if (!Number.isSafeInteger(number) || !Number.isSafeInteger(total) ||
+          number < 1 || number > total || typeof open !== "boolean") return;
+      navigation.update({ number, total, open });
+      footer.setAttribute("data-navigation", "");
+      return;
+    }
+    if (navigation && !nav.hidden && message?.type === "bixing-toolbar:focus-preview") {
+      navigation.focusToggle();
+      return;
+    }
     if (message?.type === "bixing-preview:preference" && typeof message.open === "boolean") {
       try { localStorage.setItem(previewKey, String(message.open)); } catch { /* Keep the in-session choice. */ }
       return;
@@ -179,6 +206,8 @@
         viewer.setAttribute("sandbox", "allow-scripts");
         viewer.referrerPolicy = "no-referrer";
         viewerReady = false;
+        if (nav) nav.hidden = true;
+        footer.removeAttribute("data-navigation");
         accessCode = code;
         viewer.srcdoc = prefix + html.replace(/^\s*<!doctype\s+html(?:\s[^>]*)?>/i, "");
         remember(code);

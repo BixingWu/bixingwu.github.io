@@ -424,23 +424,22 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
       @keyframes previews-in { from { transform: translateX(-.65rem); } }
     }
     @media print { #slide-previews, #preview-backdrop, #toggle-previews { display: none !important; } }
-    .deck-tools {
-      display: flex; align-items: center; gap: .45rem;
-      padding: .2rem max(var(--edge), env(safe-area-inset-right)) .2rem max(var(--edge), env(safe-area-inset-left));
+    #deck-footer {
+      display: grid; grid-template-columns: auto minmax(0,1fr) auto; align-items: center;
+      gap: 0 .65rem; padding: .15rem max(var(--edge),env(safe-area-inset-right)) max(.15rem,env(safe-area-inset-bottom)) max(var(--edge),env(safe-area-inset-left));
       border-top: 1px solid var(--line);
     }
-    #position { color: var(--muted); font-variant-numeric: tabular-nums; }
-    #position:disabled { opacity: 1; }
-    #slide-jump { display: flex; align-items: center; gap: .14rem; }
-    #slide-number { width: 4.8ch; min-height: 2.75rem; padding: .16rem .25rem; border: 1px solid var(--line); border-radius: .3rem; color: var(--ink); background: var(--page); font: 400 1rem "Open Sans", sans-serif; font-variant-numeric: tabular-nums; text-align: center; }
-    #slide-number:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
-    #deck-name { margin-inline-end: auto; color: var(--ink); font-size: .9rem; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .deck-tools button { min-width: 2.75rem; min-height: 2.75rem; padding: .2rem .6rem; border: 0; border-radius: .3rem; background: transparent; color: var(--accent); font: inherit; cursor: pointer; }
-    .deck-tools button:hover:enabled, .deck-tools button:focus-visible { background: #edf1f6; }
-    .deck-tools button:focus-visible { outline: 2px solid currentColor; outline-offset: -2px; }
-    .deck-tools button:disabled { opacity: .35; cursor: default; }
-    #toggle-previews { display: grid; place-items: center; color: #4a505a; }
-    #toggle-previews[aria-expanded="true"] { color: var(--accent); }
+    #deck-footer .deck-tools { display: contents; }
+    #deck-footer #toggle-previews { grid-column: 1; grid-row: 1; }
+    #deck-footer #meeting-notes { grid-column: 2; grid-row: 1; border: 0; padding: .25rem 0; }
+    #deck-footer .deck-pages { grid-column: 3; grid-row: 1; justify-self: end; }
+    @media (max-width: 39.99rem) {
+      #deck-footer { grid-template-columns: minmax(0,1fr) auto; }
+      #deck-footer #toggle-previews { justify-self: start; }
+      #deck-footer .deck-pages { grid-column: 2; }
+      #deck-footer #meeting-notes { grid-column: 1/-1; grid-row: 2; }
+    }
+    @media print { #deck-footer { display: none; } }
     @media (min-width: 43.01rem) and (min-height: 30.01rem) {
       .presenting .cover { align-content: start; align-items: start; padding-block-start: 38cqh; }
       .presenting .cover .byline { margin-top: 7cqh; }
@@ -460,9 +459,6 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
       .trajectory-list h3 { margin-bottom: .22em; }
       .comparison-plots { grid-template-columns: minmax(0,1fr); }
       .plot { font-size: 22px; }
-      .deck-tools { gap: .12rem; font-size: .875rem; }
-      #deck-name { display: none; }
-      #toggle-previews { margin-inline-end: auto; }
     }
     @media (orientation: landscape) and (max-height: 30rem) {
       .slide { padding-block: .65rem; gap: .55rem; }
@@ -494,6 +490,30 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
     }
     [hidden] { display: none !important; }
   </style>
+<!-- meeting-navigation-style:start -->
+  <style>
+    .deck-tools, .deck-pages, #slide-jump { display: flex; align-items: center; }
+    .deck-pages, #slide-jump { gap: .12rem; }
+    .deck-tools { font: 500 .9rem/1.3 "Open Sans", system-ui, sans-serif; }
+    .deck-tools button {
+      display: grid; place-items: center; min-width: 2.75rem; min-height: 2.75rem; margin: 0; padding: .2rem .55rem;
+      border: 0; border-radius: .35rem; background: transparent; color: #1c4587; font: inherit; cursor: pointer;
+    }
+    .deck-tools button:hover:enabled, .deck-tools button:focus-visible { background: #edf1f6; }
+    .deck-tools button:focus-visible { outline: 2px solid currentColor; outline-offset: -2px; }
+    .deck-tools button:disabled { opacity: .35; cursor: default; }
+    .deck-tools #position { color: #595959; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .deck-tools #position:disabled { opacity: 1; }
+    .deck-tools #toggle-previews { color: #4a505a; }
+    .deck-tools #toggle-previews[aria-expanded="true"] { color: #1c4587; }
+    #slide-number {
+      width: 4.8ch; min-height: 2.75rem; padding: .15rem .25rem; border: 1px solid #d9d9d9; border-radius: .35rem;
+      color: #252525; background: white; font: 400 1rem/1.3 "Open Sans", system-ui, sans-serif;
+      font-variant-numeric: tabular-nums; text-align: center;
+    }
+    #slide-number:focus { outline: 2px solid #1c4587; outline-offset: -1px; }
+  </style>
+<!-- meeting-navigation-style:end -->
 </head>
 <body>
   <div id="deck-stage">
@@ -604,37 +624,171 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
     <!-- deck-slides:end -->
   </main>
   </div>
+  <footer id="deck-footer" hidden>
+<!-- meeting-navigation:start -->
   <nav class="deck-tools" hidden aria-label="Presentation controls">
     <button id="toggle-previews" type="button" aria-controls="slide-previews" aria-expanded="false" aria-label="Show slide previews" title="Show slide previews">
       <svg aria-hidden="true" width="19" height="19" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="16" height="14" rx="2.2"/><path d="M7.4 3v14M4.2 6.5h1M4.2 9.5h1"/></svg>
     </button>
-    <span id="deck-name" aria-hidden="true"></span>
-    <button id="position" type="button" title="Go to slide" aria-live="polite" aria-controls="slide-jump" aria-expanded="false"></button>
-    <div id="slide-jump" role="group" aria-label="Go to slide" hidden>
-      <input id="slide-number" type="text" inputmode="numeric" enterkeyhint="go" autocomplete="off" aria-label="Slide number">
-      <button id="jump-confirm" type="button">Go</button>
+    <div class="deck-pages">
+      <button id="previous" type="button" aria-label="Previous slide" title="Previous slide">←</button>
+      <button id="position" type="button" title="Go to slide" aria-live="polite" aria-controls="slide-jump" aria-expanded="false"></button>
+      <div id="slide-jump" role="group" aria-label="Go to slide" hidden>
+        <input id="slide-number" type="text" inputmode="numeric" enterkeyhint="go" autocomplete="off" aria-label="Slide number">
+        <button id="jump-confirm" type="button">Go</button>
+      </div>
+      <button id="next" type="button" aria-label="Next slide" title="Next slide">→</button>
     </div>
-    <button id="previous" type="button" aria-label="Previous slide" title="Previous slide">←</button>
-    <button id="next" type="button" aria-label="Next slide" title="Next slide">→</button>
   </nav>
+  <script>
+    function createSlideNavigation(nav, { step, go, toggle, prepareJump }) {
+      const preview = nav.querySelector("#toggle-previews");
+      const previous = nav.querySelector("#previous");
+      const next = nav.querySelector("#next");
+      const position = nav.querySelector("#position");
+      const jumpEditor = nav.querySelector("#slide-jump");
+      const slideNumber = nav.querySelector("#slide-number");
+      const jumpConfirm = nav.querySelector("#jump-confirm");
+      let current = 0;
+      let count = 0;
+
+      function focusToggle() { preview.focus({ preventScroll: true }); }
+      function closeJump(restoreFocus) {
+        jumpEditor.hidden = true;
+        position.hidden = false;
+        position.setAttribute("aria-expanded", "false");
+        if (restoreFocus) position.focus({ preventScroll: true });
+      }
+      function update({ number, total, open }) {
+        nav.hidden = false;
+        if (number !== current && !jumpEditor.hidden) closeJump(jumpEditor.contains(document.activeElement));
+        if (number !== current || total !== count) {
+          position.textContent = number + " / " + total;
+          position.setAttribute("aria-label", "Slide " + number + " of " + total + (total > 1 ? ". Go to slide" : ""));
+          position.disabled = total < 2;
+          if (!position.disabled && ((number === 1 && document.activeElement === previous) ||
+              (number === total && document.activeElement === next))) {
+            position.focus({ preventScroll: true });
+          }
+          previous.disabled = number === 1;
+          next.disabled = number === total;
+          preview.hidden = total < 2;
+          current = number;
+          count = total;
+        }
+        preview.setAttribute("aria-expanded", String(open));
+        preview.title = (open ? "Hide" : "Show") + " slide previews";
+        preview.setAttribute("aria-label", preview.title);
+      }
+      function jumpToSlide() {
+        const value = slideNumber.value.trim();
+        const number = Number(value);
+        if (!/^\d+$/.test(value) || number < 1 || number > count) {
+          slideNumber.setCustomValidity("Enter a slide number from 1 to " + count + ".");
+          slideNumber.focus();
+          slideNumber.reportValidity();
+          return;
+        }
+        closeJump(true);
+        go(number);
+      }
+
+      // A focused note may collapse on blur. Keep the target under the pointer until click.
+      const toolbarButton = event => event.target.closest("button:enabled");
+      nav.addEventListener("mousedown", event => {
+        if (event.button === 0 && toolbarButton(event)) event.preventDefault();
+      });
+      nav.addEventListener("click", event => {
+        const button = toolbarButton(event);
+        if (event.detail > 0 && button && button !== jumpConfirm) button.focus({ preventScroll: true });
+      }, true);
+      preview.addEventListener("click", toggle);
+      previous.addEventListener("click", () => step(-1));
+      next.addEventListener("click", () => step(1));
+      position.addEventListener("click", () => {
+        prepareJump();
+        position.setAttribute("aria-expanded", "true");
+        position.hidden = true;
+        jumpEditor.hidden = false;
+        slideNumber.setCustomValidity("");
+        slideNumber.value = String(current);
+        slideNumber.focus({ preventScroll: true });
+        slideNumber.select();
+      });
+      slideNumber.addEventListener("input", () => slideNumber.setCustomValidity(""));
+      jumpConfirm.addEventListener("click", jumpToSlide);
+      jumpEditor.addEventListener("keydown", event => {
+        event.stopPropagation();
+        if (event.isComposing || event.keyCode === 229) return;
+        if (event.key === "Escape") {
+          event.preventDefault();
+          closeJump(true);
+        } else if (event.key === "Enter" && event.target === slideNumber) {
+          event.preventDefault();
+          jumpToSlide();
+        }
+      });
+      jumpEditor.addEventListener("focusout", event => {
+        if (!jumpEditor.hidden && !jumpEditor.contains(event.relatedTarget)) closeJump(false);
+      });
+      nav.addEventListener("keydown", event => {
+        if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey || event.isComposing || event.keyCode === 229) return;
+        switch (event.key) {
+          case "ArrowLeft": step(-1); break;
+          case "ArrowRight": step(1); break;
+          case "Home": go(1); break;
+          case "End": go(count); break;
+          case "Escape":
+            if (preview.getAttribute("aria-expanded") !== "true") return;
+            toggle();
+            focusToggle();
+            break;
+          default: return;
+        }
+        event.preventDefault();
+      });
+      return { update, focusToggle };
+    }
+  </script>
+<!-- meeting-navigation:end -->
   <script>
     const deck = document.getElementById("slides");
     const slides = [...deck.children].filter(element => element.matches("section.slide"));
-    const previous = document.getElementById("previous");
-    const next = document.getElementById("next");
-    const deckTools = document.querySelector(".deck-tools");
-    const position = document.getElementById("position");
-    const jumpEditor = document.getElementById("slide-jump");
-    const slideNumber = document.getElementById("slide-number");
+    const footer = document.getElementById("deck-footer");
     const previewPanel = document.getElementById("slide-previews");
     const previewList = document.getElementById("preview-list");
-    const previewToggle = document.getElementById("toggle-previews");
     const previewBackdrop = document.getElementById("preview-backdrop");
     const wideStage = window.matchMedia("(min-width: 70rem) and (min-height: 34rem)");
     const embedded = window.parent !== window;
     const preferenceKey = "bixing:slide-previews:" + location.pathname;
     let desktopPreference = null;
     let current = 0;
+
+    let hostedToolbar = false;
+    function prepareJump() {
+      if (!wideStage.matches && !previewPanel.hidden) setPreviews(false, false);
+    }
+    function go(number) {
+      prepareJump();
+      displaySlide(number);
+    }
+    const navigation = createSlideNavigation(footer.querySelector(".deck-tools"), {
+      step: delta => go(current + delta),
+      go,
+      toggle: () => choosePreviews(previewPanel.hidden),
+      prepareJump
+    });
+
+    function updateControls() {
+      if (!current) return;
+      const state = { number: current, total: slides.length, open: !previewPanel.hidden };
+      navigation.update(state);
+      if (hostedToolbar) window.parent.postMessage({ type: "bixing-toolbar:state", ...state }, "*");
+    }
+    function focusPreviewToggle() {
+      if (hostedToolbar) window.parent.postMessage({ type: "bixing-toolbar:focus-preview" }, "*");
+      else navigation.focusToggle();
+    }
 
     const previewButtons = slides.map((slide, index) => {
       const number = index + 1;
@@ -680,17 +834,16 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
       else if (tile.bottom > list.bottom) previewList.scrollTop += tile.bottom - list.bottom + 4;
     }
 
-    function setPreviews(open) {
+    function setPreviews(open, restoreFocus = true) {
       open = open && slides.length > 1;
       const drawer = open && !wideStage.matches;
-      if (!open && previewPanel.contains(document.activeElement)) previewToggle.focus({ preventScroll: true });
+      const returnFocus = !open && restoreFocus && previewPanel.contains(document.activeElement);
       previewPanel.hidden = !open;
       previewPanel.toggleAttribute("data-drawer", drawer);
       previewBackdrop.hidden = !drawer;
       deck.inert = drawer;
-      previewToggle.setAttribute("aria-expanded", String(open));
-      previewToggle.title = (open ? "Hide" : "Show") + " slide previews";
-      previewToggle.setAttribute("aria-label", previewToggle.title);
+      updateControls();
+      if (returnFocus) focusPreviewToggle();
       if (open) revealPreview(previewButtons[current - 1]);
     }
 
@@ -707,7 +860,6 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
       }
     }
 
-    previewToggle.addEventListener("click", () => choosePreviews(previewPanel.hidden));
     document.getElementById("close-previews").addEventListener("click", () => choosePreviews(false));
     previewBackdrop.addEventListener("click", () => choosePreviews(false));
     wideStage.addEventListener("change", () => setPreviews(wideStage.matches && (desktopPreference ?? true)));
@@ -716,8 +868,8 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
       if (!button) return;
       displaySlide(Number(button.dataset.slideNumber));
       if (!wideStage.matches) {
-        setPreviews(false);
-        previewToggle.focus({ preventScroll: true });
+        setPreviews(false, false);
+        focusPreviewToggle();
       }
     });
     previewList.addEventListener("keydown", event => {
@@ -745,7 +897,6 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
         }
         activePreview.setAttribute("aria-current", "page");
         activePreview.tabIndex = 0;
-        if (!jumpEditor.hidden) closeJump(jumpEditor.contains(document.activeElement));
         if (previewList.contains(document.activeElement)) activePreview.focus({ preventScroll: true });
         revealPreview(activePreview);
         current = number;
@@ -754,77 +905,26 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
           slide.classList.toggle("showing", !initial && !slide.hidden);
         });
         deck.scrollTop = 0;
-        position.textContent = number + " / " + slides.length;
-        position.setAttribute("aria-label", "Slide " + number + " of " + slides.length + (slides.length > 1 ? ". Go to slide" : ""));
-        previous.disabled = number === 1;
-        next.disabled = number === slides.length;
+        updateControls();
         document.dispatchEvent(new CustomEvent("bixing-notes:page", { detail: { slide: number } }));
       }
       if (!initial && window.parent !== window) {
         window.parent.postMessage({ type: "bixing-slide:change", number }, "*");
       }
     }
-    // Defer mouse focus until click so a collapsing note cannot move the target mid-press.
-    const toolbarButton = event => event.target.closest("button:enabled:not(#jump-confirm)");
-    deckTools.addEventListener("mousedown", event => {
-      if (event.button === 0 && toolbarButton(event)) event.preventDefault();
-    });
-    deckTools.addEventListener("click", event => {
-      if (event.detail > 0) toolbarButton(event)?.focus({ preventScroll: true });
-    }, true);
-    previous.addEventListener("click", () => displaySlide(current - 1));
-    next.addEventListener("click", () => displaySlide(current + 1));
-    function closeJump(restoreFocus) {
-      jumpEditor.hidden = true;
-      position.hidden = false;
-      position.setAttribute("aria-expanded", "false");
-      if (restoreFocus) position.focus({ preventScroll: true });
-    }
-    position.addEventListener("click", () => {
-      if (!wideStage.matches && !previewPanel.hidden) setPreviews(false);
-      position.setAttribute("aria-expanded", "true");
-      position.hidden = true;
-      jumpEditor.hidden = false;
-      slideNumber.setCustomValidity("");
-      slideNumber.value = String(current);
-      slideNumber.focus({ preventScroll: true });
-      slideNumber.select();
-    });
-    function jumpToSlide() {
-      const value = slideNumber.value.trim();
-      const number = Number(value);
-      if (!/^\d+$/.test(value) || number < 1 || number > slides.length) {
-        slideNumber.setCustomValidity("Enter a slide number from 1 to " + slides.length + ".");
-        slideNumber.focus();
-        slideNumber.reportValidity();
-        return;
-      }
-      closeJump(true);
-      displaySlide(number);
-    }
-    slideNumber.addEventListener("input", () => slideNumber.setCustomValidity(""));
-    const jumpConfirm = document.getElementById("jump-confirm");
-    jumpConfirm.addEventListener("mousedown", event => {
-      if (event.button === 0) event.preventDefault();
-    });
-    jumpConfirm.addEventListener("click", jumpToSlide);
-    jumpEditor.addEventListener("keydown", event => {
-      event.stopPropagation();
-      if (event.isComposing || event.keyCode === 229) return;
-      if (event.key === "Escape") {
-        event.preventDefault();
-        closeJump(true);
-      } else if (event.key === "Enter" && event.target === slideNumber) {
-        event.preventDefault();
-        jumpToSlide();
-      }
-    });
-    jumpEditor.addEventListener("focusout", event => {
-      if (!jumpEditor.hidden && !jumpEditor.contains(event.relatedTarget)) closeJump(false);
-    });
     window.addEventListener("message", event => {
       if (!embedded || event.source !== window.parent) return;
-      if (event.data?.type === "bixing-slide:go") {
+      if (event.data?.type === "bixing-toolbar:attach" && slides.length) {
+        hostedToolbar = true;
+        footer.hidden = true;
+        updateControls();
+      } else if (event.data?.type === "bixing-toolbar:action" && hostedToolbar) {
+        const { action, number, delta } = event.data;
+        if (action === "step" && (delta === 1 || delta === -1)) go(current + delta);
+        else if (action === "go") go(number);
+        else if (action === "toggle") choosePreviews(previewPanel.hidden);
+        else if (action === "prepare-jump") prepareJump();
+      } else if (event.data?.type === "bixing-slide:go") {
         displaySlide(event.data.number, true);
       } else if (event.data?.type === "bixing-preview:restore" && typeof event.data.open === "boolean") {
         desktopPreference = event.data.open;
@@ -842,7 +942,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
       if (event.key === "Escape" && !previewPanel.hidden) {
         event.preventDefault();
         choosePreviews(false);
-        previewToggle.focus({ preventScroll: true });
+        if (!previewPanel.contains(event.target)) focusPreviewToggle();
         return;
       }
       const target = { ArrowLeft: current - 1, ArrowRight: current + 1, Home: 1, End: slides.length }[event.key];
@@ -869,11 +969,8 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
     });
 
     if (slides.length) {
-      document.getElementById("deck-name").textContent = slides[0].querySelector("h1")?.textContent.trim() || "";
       document.body.classList.add("presenting");
-      deckTools.hidden = false;
-      previewToggle.hidden = slides.length < 2;
-      position.disabled = slides.length < 2;
+      footer.hidden = false;
       if (!embedded) {
         try {
           const saved = localStorage.getItem(preferenceKey);
@@ -886,7 +983,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
   </script>
 <!-- meeting-notes:start -->
 <style>
-  body.presenting.mn-standalone { grid-template-rows: minmax(0,1fr) auto auto; overflow: hidden; }
+  body.presenting.mn-standalone { overflow: hidden; }
   body.mn-host { width: 100%; height: 100vh; height: 100dvh; min-height: 0; display: grid; grid-template-rows: minmax(0,1fr) auto; place-items: stretch; overflow: hidden; }
   body.mn-host > #slides-gate, body.mn-host #slide-viewer { display: block; min-width: 0; min-height: 0; width: 100%; height: 100%; }
   #meeting-notes { display: grid; grid-template-columns: auto minmax(0,1fr) auto; align-items: start; column-gap: .65rem; box-sizing: border-box; min-width: 0; margin: 0; padding: .25rem max(clamp(1.1rem,2.8vw,3.8rem),env(safe-area-inset-right)) max(.25rem,env(safe-area-inset-bottom)) max(clamp(1.1rem,2.8vw,3.8rem),env(safe-area-inset-left)); border-top: 1px solid #d9d9d9; color-scheme: light; color: #252525; background: #fff; text-align: left; font: 400 1rem/1.4 "Lato","Open Sans",system-ui,"PingFang SC","Microsoft YaHei",sans-serif; }
@@ -1006,7 +1103,10 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
   panel.addEventListener("keydown", event => {
     event.stopPropagation();
     if (event.key === "Escape" && !event.isComposing && event.keyCode !== 229) {
-      field.blur();
+      event.preventDefault();
+      const position = document.getElementById("position");
+      if (position && !position.disabled && position.getClientRects().length) position.focus({ preventScroll: true });
+      else field.blur();
     }
   });
   if (!nativeSizing) window.addEventListener("resize", fitField);
@@ -1023,5 +1123,6 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
 })();
 </script>
 <!-- meeting-notes:end -->
+  </footer>
 </body>
 </html>

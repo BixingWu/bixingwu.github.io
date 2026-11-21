@@ -30,28 +30,36 @@ button:disabled { opacity: .65; cursor: wait; }
 
 #slide-footer { display: none; }
 body.mn-host #slide-footer {
+  --footer-edge: clamp(.7rem, 2.8vw, 3.8rem);
   display: grid;
+  grid-template-areas: "notes share";
   grid-template-columns: minmax(0, 1fr) auto;
-  align-items: start;
+  align-items: center;
+  column-gap: .35rem;
   margin: 0;
-  padding: 0 max(clamp(1.1rem, 2.8vw, 3.8rem), env(safe-area-inset-right)) env(safe-area-inset-bottom) 0;
+  padding: .15rem max(var(--footer-edge), env(safe-area-inset-right)) max(.15rem, env(safe-area-inset-bottom)) max(var(--footer-edge), env(safe-area-inset-left));
   border-top: 1px solid #e7e9ed;
+  color: #171717;
   background: #fff;
 }
-#slide-footer #meeting-notes { border-top: 0; padding-right: .6rem; padding-bottom: .25rem; }
+body.mn-host #slide-footer[data-navigation] {
+  grid-template-areas: "previews notes pages share";
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+}
+#slide-footer .deck-tools:not([hidden]) { display: contents; }
+#slide-footer #toggle-previews { grid-area: previews; }
+#slide-footer .deck-pages { grid-area: pages; }
+#slide-footer #meeting-notes { grid-area: notes; padding: .25rem 0; border: 0; }
 #copy-share-link {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: .36rem;
-  inline-size: 8.8rem;
-  min-height: 2.2rem;
+  grid-area: share;
+  display: grid;
+  place-items: center;
+  inline-size: 2.75rem;
+  min-height: 2.75rem;
   margin: 0;
-  padding: .25rem .5rem;
+  padding: 0;
   background: transparent;
   color: #1c4587;
-  font: 600 .82rem/1.2 "Open Sans", system-ui, sans-serif;
-  white-space: nowrap;
 }
 @media (hover: hover) {
   #copy-share-link:hover { background: #eef3f9; }
@@ -60,7 +68,7 @@ body.mn-host #slide-footer {
 #copy-share-link:focus-visible { outline-offset: -2px; }
 #copy-share-link .link-check, #slide-footer:has(#share-link-status:not(:empty)) .link-chain { display: none; }
 #slide-footer:has(#share-link-status:not(:empty)) .link-check { display: inline; }
-#share-link-status {
+#share-link-label, #share-link-status {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -86,16 +94,12 @@ body.mn-host #slide-footer {
 #share-link-value { font-size: 1rem; }
 #share-link-dialog form { margin: .75rem 0 0; justify-content: end; }
 #close-share-link { min-width: 5rem; }
-@media (max-width: 32rem) {
-  body.mn-host #slide-footer { padding-right: max(.5rem, env(safe-area-inset-right)); }
-  #copy-share-link { inline-size: 8.1rem; gap: .25rem; padding-inline: .35rem; }
-  #slide-footer:has(#meeting-notes-text:focus) #copy-share-link { inline-size: 2.75rem; }
-  #slide-footer:has(#meeting-notes-text:focus) #share-link-label { position: absolute; inline-size: 1px; block-size: 1px; overflow: hidden; clip-path: inset(50%); }
-}
-@media (max-width: 360px) {
-  #slide-footer #meeting-notes { column-gap: .35rem; padding-inline: max(.7rem, env(safe-area-inset-left)) .25rem; }
-  #copy-share-link { inline-size: 2.75rem; }
-  #share-link-label { position: absolute; inline-size: 1px; block-size: 1px; overflow: hidden; clip-path: inset(50%); }
+@media (max-width: 38rem) {
+  body.mn-host #slide-footer[data-navigation] {
+    grid-template-areas: "previews . pages share" "notes notes notes notes";
+    grid-template-columns: auto minmax(0, 1fr) auto auto;
+  }
+  #slide-footer[data-navigation] #meeting-notes { border-top: 1px solid #eef0f2; }
 }
 @media print {
   body.mn-host #slide-footer, #share-link-dialog { display: none; }
