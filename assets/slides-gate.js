@@ -45,6 +45,14 @@
       else localStorage.removeItem(storageKey);
     } catch { /* The shared link still works without device storage. */ }
   }
+  function showCodeError(message, fromField) {
+    status.textContent = message;
+    input.setAttribute("aria-invalid", "true");
+    if (fromField) {
+      input.focus({ preventScroll: true });
+      input.select();
+    }
+  }
   async function copyShareLink() {
     if (!accessCode) return;
     const link = new URL(location.pathname, location.origin);
@@ -128,21 +136,28 @@
     }, key, payload.subarray(16));
   }
 
-  async function unlock(value) {
+  function resetEntry() {
     pending?.abort();
     pending = null;
     button.disabled = false;
+    input.removeAttribute("aria-invalid");
+    form.removeAttribute("aria-busy");
+    status.textContent = "";
+  }
+  async function unlock(value, fromField = false, startSlide = "") {
+    resetEntry();
     const saved = savedCode();
     const codes = [...new Set([canonicalCode(value), saved].filter(Boolean))];
     if (!codes.length) {
-      if (value !== null) status.textContent = "Enter the 12-character access code from the private link.";
+      if (value !== null) showCodeError("Enter a 12-character code or paste this presentation’s share link.", fromField);
       return;
     }
     const request = new AbortController();
     pending = request;
     button.disabled = true;
+    form.setAttribute("aria-busy", "true");
     status.textContent = "Opening presentation…";
-    let failure = "The encrypted presentation could not be loaded. Try again.";
+    let wrongCode = false;
     try {
       const response = await fetch(gate.dataset.payload || "./deck.bin", {
         mode: "same-origin", credentials: "omit", redirect: "error", referrerPolicy: "no-referrer", signal: request.signal
@@ -150,7 +165,6 @@
       if (!response.ok) throw new Error("Unavailable presentation");
       const payload = new Uint8Array(await response.arrayBuffer());
       if (payload.length < 32 || String.fromCharCode(...payload.subarray(0, 4)) !== "BWS1") throw new Error("Invalid presentation");
-      failure = "This code does not open the presentation. Check the original private link.";
       for (const code of codes) {
         if (pending !== request) return;
         let plain;
@@ -166,6 +180,7 @@
         remember(code);
         input.value = "";
         clearSharedCode();
+        if (startSlide) history.replaceState(history.state, "", location.pathname + location.search + "#" + startSlide);
         heading.hidden = true;
         status.textContent = "";
         viewer.hidden = false;
@@ -174,20 +189,39 @@
         return;
       }
       if (request === pending && saved) remember("");
+      wrongCode = true;
       throw new Error("Invalid access code");
     } catch {
-      if (request === pending) status.textContent = failure;
+      if (request === pending) {
+        if (wrongCode) showCodeError("This code doesn’t open the slides. Check the presenter’s link.", fromField);
+        else status.textContent = "The slides could not be loaded. Try again.";
+      }
     } finally {
       if (request === pending) {
         pending = null;
         button.disabled = false;
+        form.removeAttribute("aria-busy");
       }
     }
   }
 
+  input.addEventListener("input", resetEntry);
   form.addEventListener("submit", event => {
     event.preventDefault();
-    unlock(input.value);
+    const value = input.value.trim();
+    if (!/^https?:\/\//i.test(value)) {
+      unlock(value, true);
+      return;
+    }
+    let link;
+    try { link = new URL(value); } catch { /* The input feedback below also covers malformed links. */ }
+    if (!link || link.origin !== location.origin || link.pathname.replace(/\/$/, "") !== location.pathname.replace(/\/$/, "")) {
+      showCodeError("Paste the share link for this presentation.", true);
+      return;
+    }
+    const fragment = new URLSearchParams(link.hash.slice(1));
+    const anchor = [...fragment.keys()].find(key => /^[1-9]\d*$/.test(key) && Number.isSafeInteger(Number(key)));
+    unlock(fragment.get("p") || "", true, anchor);
   });
   function openLocation() {
     const explicit = new URLSearchParams(location.hash.slice(1)).get("p");

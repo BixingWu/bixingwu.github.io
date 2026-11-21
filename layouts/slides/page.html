@@ -5,17 +5,22 @@
 {{ if not $payload }}{{ errorf "Missing encrypted slide resource %s for %s" $filename .Path }}{{ end }}
 <main id="slides-gate" data-id="{{ $id }}" data-payload="{{ $payload.RelPermalink }}">
   <section id="gate-heading" class="gate-card" aria-labelledby="gate-title">
-    <a class="gate-home" href="{{ site.Home.RelPermalink }}">{{ site.Title }}</a>
-    <h1 id="gate-title">Shared slides</h1>
-    <form id="unlock-form">
+    {{ $back := cond (isset .Params "project") .Parent site.Home }}
+    <a class="gate-home" href="{{ $back.RelPermalink }}">
+      <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="m14 6-6 6 6 6"/></svg>
+      {{ if .Params.project }}{{ $back.Title }}{{ else }}{{ site.Title }}{{ end }}
+    </a>
+    <h1 id="gate-title">{{ default .Title .Params.project }}</h1>
+    <form id="unlock-form" novalidate>
       <label for="access-key">Access code</label>
-      <input id="access-key" type="password" placeholder="xxxx-xxxx-xxxx" autocomplete="off" spellcheck="false" autocapitalize="none" required>
+      <input id="access-key" type="password" placeholder="xxxx-xxxx-xxxx" aria-describedby="access-help unlock-status" autocomplete="off" autocorrect="off" spellcheck="false" autocapitalize="none" enterkeyhint="go" required>
+      <p id="access-help">You can also paste the full share link.</p>
       <button id="unlock-slides" type="submit">Open slides</button>
     </form>
     <p id="unlock-status" role="status" aria-live="polite"></p>
     <noscript>Enable JavaScript to decrypt these slides on your device.</noscript>
   </section>
-  <iframe id="slide-viewer" title="Shared presentation" sandbox="allow-scripts" referrerpolicy="no-referrer" hidden></iframe>
+  <iframe id="slide-viewer" title="{{ with .Params.project }}{{ . }} presentation{{ else }}Shared presentation{{ end }}" sandbox="allow-scripts" referrerpolicy="no-referrer" hidden></iframe>
 </main>
 {{ $notes := findRE `(?s)<!-- meeting-notes:start -->.*?<!-- meeting-notes:end -->` (readFile "tools/slides-template.html") }}
 {{ if ne (len $notes) 1 }}{{ errorf "The slide template must contain one discussion notes section" }}{{ end }}

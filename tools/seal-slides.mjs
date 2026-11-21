@@ -1,4 +1,4 @@
-import { createCipheriv, pbkdf2Sync, randomBytes } from 'node:crypto';
+import { createCipheriv, createDecipheriv, pbkdf2Sync, randomBytes } from 'node:crypto';
 import { constants } from 'node:fs';
 import { link, lstat, mkdir, mkdtemp, open, readFile, readdir, realpath, rename, rm, rmdir, unlink, writeFile } from 'node:fs/promises';
 import path from 'node:path';
@@ -124,19 +124,24 @@ async function outputDirectory(section) {
   return slides;
 }
 
-function encrypt(html, id) {
+function newCode() {
   const alphabet = '0123456789abcdefghjkmnpqrstvwxyz';
-  const passcode = Array.from(randomBytes(12), byte => alphabet[byte & 31]).join('');
+  return Array.from(randomBytes(12), byte => alphabet[byte & 31]).join('');
+}
+
+function encryptionKey(id, passcode) {
   const context = Buffer.from(`bixingwu.com/slides/v1/${id}`, 'utf8');
-  const key = pbkdf2Sync(passcode, context, 600_000, 32, 'sha256');
+  return { context, key: pbkdf2Sync(passcode, context, 600_000, 32, 'sha256') };
+}
+
+function encrypt(html, { key, context }) {
   const iv = randomBytes(12);
   const cipher = createCipheriv('aes-256-gcm', key, iv, { authTagLength: 16 });
   cipher.setAAD(context);
-  const payload = Buffer.concat([Buffer.from('BWS1', 'ascii'), iv, cipher.update(html), cipher.final(), cipher.getAuthTag()]);
-  return { passcode, payload };
+  return Buffer.concat([Buffer.from('BWS1', 'ascii'), iv, cipher.update(html), cipher.final(), cipher.getAuthTag()]);
 }
 
-async function replaceProject(staging, destination, project, filename) {
+async function currentProject(destination, project) {
   if (!(await lstat(destination)).isDirectory() || await realpath(destination) !== destination) {
     throw new Error('The project bundle must be a regular site directory.');
   }
@@ -148,7 +153,45 @@ async function replaceProject(staging, destination, project, filename) {
   if (!oldId || (current !== manifest(project, oldId) && current !== manifest(project, oldId, false))) {
     throw new Error('This directory is not a project managed by the slide packager.');
   }
+  return oldId;
+}
 
+async function reviseProject(staging, destination, project, shareFile, html) {
+  const id = await currentProject(destination, project);
+  const supplied = path.resolve(shareFile);
+  const resolved = await realpath(supplied);
+  if (insideRepository(supplied) || insideRepository(resolved) || !(await lstat(resolved)).isFile()) {
+    throw new Error('Keep the private share link in a regular file outside the website repository.');
+  }
+  const url = new URL((await readFile(resolved, 'utf8')).trim());
+  const code = new URLSearchParams(url.hash.slice(1)).get('p')?.replaceAll('-', '').toLowerCase();
+  if (url.origin !== 'https://bixingwu.com' || url.pathname !== `/GroupMeeting/${project}/` ||
+      !/^[0-9a-hjkmnp-tv-z]{12}$/.test(code ?? '')) throw new Error('Choose the saved share link for this project.');
+  const name = `deck-${id}.bin`;
+  const existing = path.join(destination, name);
+  if (!(await lstat(existing)).isFile()) throw new Error('Missing the original encrypted report.');
+  const bytes = await readFile(existing);
+  if (bytes.length < 32 || bytes.toString('ascii', 0, 4) !== 'BWS1') throw new Error('Invalid encrypted report.');
+  const keys = encryptionKey(id, code);
+  const reader = createDecipheriv('aes-256-gcm', keys.key, bytes.subarray(4, 16));
+  reader.setAAD(keys.context);
+  reader.setAuthTag(bytes.subarray(-16));
+  let original;
+  try { original = Buffer.concat([reader.update(bytes.subarray(16, -16)), reader.final()]); }
+  catch { throw new Error('The saved link does not open the current report.'); }
+  if (original.equals(html)) {
+    console.log(`/GroupMeeting/${project}/ already contains this revision.`);
+    return;
+  }
+  const candidate = path.join(staging, name);
+  await writeFile(candidate, encrypt(html, keys), { flag: 'wx' });
+  await rename(candidate, existing);
+  console.log(`Updated /GroupMeeting/${project}/ using its existing share link.`);
+}
+
+async function replaceProject(staging, destination, project, filename) {
+  await currentProject(destination, project);
+  const index = path.join(destination, 'index.md');
   // Install the new ciphertext exclusively before atomically changing the reader's manifest.
   const newPayload = path.join(destination, filename);
   await link(path.join(staging, filename), newPayload);
@@ -175,12 +218,9 @@ async function publish(staging, directory, project, id, replace, filename) {
   }
 }
 
-async function seal({ filename, project, replace }) {
+async function seal({ filename, project, replace, shareFile }) {
   const html = await readDeck(filename);
   const directory = await outputDirectory(project ? 'GroupMeeting' : 'slides');
-  const id = randomBytes(16).toString('hex');
-  const { passcode, payload } = encrypt(html, id);
-  const payloadName = project ? `deck-${id}.bin` : 'deck.bin';
   const lock = project && path.join(repository, `.seal-lock-${project.toLowerCase()}`);
   if (lock) {
     try {
@@ -190,10 +230,18 @@ async function seal({ filename, project, replace }) {
       throw error;
     }
   }
-  const url = project ? `/GroupMeeting/${project}/` : `/slides/${id}/`;
   let staging;
   try {
     staging = await mkdtemp(path.join(repository, '.seal-'));
+    if (shareFile) {
+      await reviseProject(staging, path.join(directory, project), project, shareFile, html);
+      return;
+    }
+    const id = randomBytes(16).toString('hex');
+    const passcode = newCode();
+    const payload = encrypt(html, encryptionKey(id, passcode));
+    const payloadName = project ? `deck-${id}.bin` : 'deck.bin';
+    const url = project ? `/GroupMeeting/${project}/` : `/slides/${id}/`;
     await writeFile(path.join(staging, payloadName), payload, { flag: 'wx' });
     await writeFile(path.join(staging, 'index.md'), manifest(project, id), { flag: 'wx' });
     await publish(staging, directory, project, id, replace, payloadName);
@@ -217,8 +265,8 @@ async function seal({ filename, project, replace }) {
 }
 
 function options(args) {
-  const usage = 'Usage: node tools/seal-slides.mjs [--project Ocula [--replace]] /path/outside/the/site/deck.html';
-  let filename, project, replace = false;
+  const usage = 'Usage: node tools/seal-slides.mjs [--project Ocula [--replace | --revise-with /private/share-link.txt]] /private/deck.html';
+  let filename, project, shareFile, replace = false;
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
     if (arg === '--project' && project === undefined) {
@@ -227,12 +275,15 @@ function options(args) {
           /^(?:con|prn|aux|nul|com[1-9]|lpt[1-9])$/i.test(project)) {
         throw new Error('Choose a project name of 1–64 ASCII letters, digits, or internal hyphens, starting with a letter.');
       }
+    } else if (arg === '--revise-with' && !shareFile) {
+      shareFile = args[++i];
+      if (!shareFile || shareFile.startsWith('-') || shareFile.includes('://')) throw new Error(usage);
     } else if (arg === '--replace' && !replace) replace = true;
     else if (arg.startsWith('-') || filename) throw new Error(usage);
     else filename = arg;
   }
-  if (!filename || (replace && !project)) throw new Error(usage);
-  return { filename, project, replace };
+  if (!filename || ((shareFile || replace) && !project) || (shareFile && replace)) throw new Error(usage);
+  return { filename, project, replace, shareFile };
 }
 
 try {

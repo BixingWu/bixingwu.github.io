@@ -334,23 +334,23 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
     * { box-sizing: border-box; }
     body { margin: 0; background: var(--page); color: var(--ink); }
     main { min-height: 0; }
-    .slide:not(:has(.evidence-scroll)), .slide-heading, .slide figcaption, .evidence-stack > p { touch-action: pan-y pinch-zoom; }
+    .slide:not(:has(.evidence-scroll, [role="region"][tabindex])), .slide-heading, .slide figcaption, .evidence-stack > p { touch-action: pan-y pinch-zoom; }
     .slide { display: grid; align-content: start; align-items: start; gap: clamp(1.25rem, 3.8vh, 3rem);
       min-height: min(100vh, 49rem); padding: clamp(1.05rem, 3.3vh, 2.65rem) var(--edge);
       border-bottom: 1px solid var(--line); overflow-wrap: anywhere; }
     .slide :is(h1,h2,h3,p,figure,figcaption,ol,dl,dd) { margin: 0; }
     .slide h1, .slide h2, .slide h3 { color: var(--ink); font-weight: 700; line-height: 1.13; text-wrap: balance; }
     .slide h1 { font-size: clamp(2.75rem, 5.15vw, 6.2rem); letter-spacing: -.022em; }
-    .slide h2 { font-size: clamp(1.85rem, 2.78vw, 3.35rem); letter-spacing: -.018em; }
+    .slide h2 { font-size: clamp(1.85rem, min(3.05cqw, 5.8cqh), 3.35rem); letter-spacing: -.018em; }
     .slide h3 { font-size: clamp(1.24rem, 2.1vw, 2.4rem); }
-    .slide p, .slide li, .slide dd { color: var(--muted); font-size: clamp(1.08rem, 2.22vw, 2.65rem); line-height: 1.42; }
-    .slide .section-label { color: #b7b7b7; font: 400 clamp(1.35rem, 2.5vw, 3rem)/1.06 "Economica", "Arial Narrow", sans-serif; margin-bottom: .17em; }
+    .slide p, .slide li, .slide dd { color: var(--muted); font: 400 clamp(1.08rem, min(2.05cqw, 3.78cqh), 2.25rem)/1.42 "Lato", sans-serif; }
+    .slide .section-label { color: #737373; font: 400 clamp(1.35rem, min(2.45cqw, 4.34cqh), 2.4rem)/1.06 "Economica", "Arial Narrow", sans-serif; margin-bottom: .17em; }
     .slide .em-red { color: var(--mark); }
     .slide .em-blue { color: var(--accent); }
     .slide figure img { display: block; width: auto; max-width: 100%; height: auto; max-height: 52vh; object-fit: contain; background: #fff; }
-    .slide figcaption { margin-top: .55rem; color: var(--muted); font: 400 clamp(1rem, 2.5vw, 3rem)/1.28 "Lato", sans-serif; }
+    .slide figcaption { margin-top: .55rem; color: var(--muted); font: 400 clamp(1rem, min(1.62cqw, 3.03cqh), 1.75rem)/1.3 "Lato", sans-serif; }
     .cover { grid-template-columns: minmax(0,1.4fr) minmax(0,.6fr); align-content: center; align-items: center; padding-inline: max(var(--edge), 6vw); }
-    .cover .report-kind { color: #999; font: 400 clamp(1.65rem, 4.05vw, 4.8rem)/1.13 "Lato", sans-serif; margin-bottom: .15em; }
+    .cover .report-kind { color: #737373; font: 400 clamp(1.65rem, 4.05vw, 4.8rem)/1.13 "Lato", sans-serif; margin-bottom: .15em; }
     .cover .byline { margin-top: clamp(1.9rem, 7.5vh, 5.6rem); color: var(--ink); font: 400 clamp(1.15rem, 2.78vw, 3.35rem)/1.2 "Lato", sans-serif; }
     .byline span { display: block; }
     .byline span + span { margin-top: .2em; font: 400 .75em/1.3 "Open Sans", sans-serif; }
@@ -426,13 +426,17 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
     @media print { #slide-previews, #preview-backdrop, #toggle-previews { display: none !important; } }
     .deck-tools {
       display: flex; align-items: center; gap: .45rem;
-      padding: .4rem max(var(--edge), env(safe-area-inset-right)) max(.4rem, env(safe-area-inset-bottom)) max(var(--edge), env(safe-area-inset-left));
+      padding: .2rem max(var(--edge), env(safe-area-inset-right)) max(.2rem, env(safe-area-inset-bottom)) max(var(--edge), env(safe-area-inset-left));
       border-top: 1px solid var(--line);
     }
-    .deck-tools [role="status"] { min-width: 3.05rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+    #position { color: var(--muted); font-variant-numeric: tabular-nums; }
+    #position:disabled { opacity: 1; }
+    #slide-jump { display: flex; align-items: center; gap: .14rem; }
+    #slide-number { width: 4.8ch; min-height: 2.75rem; padding: .16rem .25rem; border: 1px solid var(--line); border-radius: .3rem; color: var(--ink); background: var(--page); font: 400 1rem "Open Sans", sans-serif; font-variant-numeric: tabular-nums; text-align: center; }
+    #slide-number:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
     #deck-name { margin-inline-end: auto; color: var(--ink); font-size: .9rem; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .deck-tools button { min-width: 2.75rem; min-height: 2.75rem; padding: .2rem .6rem; border: 0; border-radius: .3rem; background: transparent; color: var(--accent); font: inherit; cursor: pointer; }
-    .deck-tools button:hover:enabled, .deck-tools button:focus-visible { background: var(--wash); }
+    .deck-tools button:hover:enabled, .deck-tools button:focus-visible { background: #edf1f6; }
     .deck-tools button:focus-visible { outline: 2px solid currentColor; outline-offset: -2px; }
     .deck-tools button:disabled { opacity: .35; cursor: default; }
     #toggle-previews { display: grid; place-items: center; color: #4a505a; }
@@ -447,7 +451,6 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
     }
     @media (max-width: 43rem) {
       .slide { gap: 1.3rem; padding-block: clamp(1.3rem, 4.2vh, 2.25rem); }
-      .slide .section-label { color: #737373; }
       .cover { grid-template-columns: 1fr; gap: 1.4rem; }
       .cover-graphic { justify-self: start; width: min(70%, 13rem); }
       .trajectory-list { display: block; }
@@ -606,7 +609,11 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
       <svg aria-hidden="true" width="19" height="19" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="16" height="14" rx="2.2"/><path d="M7.4 3v14M4.2 6.5h1M4.2 9.5h1"/></svg>
     </button>
     <span id="deck-name" aria-hidden="true"></span>
-    <span id="position" role="status" aria-live="polite"></span>
+    <button id="position" type="button" title="Go to slide" aria-live="polite" aria-controls="slide-jump" aria-expanded="false"></button>
+    <div id="slide-jump" role="group" aria-label="Go to slide" hidden>
+      <input id="slide-number" type="text" inputmode="numeric" enterkeyhint="go" autocomplete="off" aria-label="Slide number">
+      <button id="jump-confirm" type="button">Go</button>
+    </div>
     <button id="previous" type="button" aria-label="Previous slide" title="Previous slide">←</button>
     <button id="next" type="button" aria-label="Next slide" title="Next slide">→</button>
   </nav>
@@ -616,6 +623,8 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
     const previous = document.getElementById("previous");
     const next = document.getElementById("next");
     const position = document.getElementById("position");
+    const jumpEditor = document.getElementById("slide-jump");
+    const slideNumber = document.getElementById("slide-number");
     const previewPanel = document.getElementById("slide-previews");
     const previewList = document.getElementById("preview-list");
     const previewToggle = document.getElementById("toggle-previews");
@@ -735,6 +744,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
         }
         activePreview.setAttribute("aria-current", "page");
         activePreview.tabIndex = 0;
+        if (!jumpEditor.hidden) closeJump(jumpEditor.contains(document.activeElement));
         if (previewList.contains(document.activeElement)) activePreview.focus({ preventScroll: true });
         revealPreview(activePreview);
         current = number;
@@ -744,7 +754,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
         });
         deck.scrollTop = 0;
         position.textContent = number + " / " + slides.length;
-        position.setAttribute("aria-label", "Slide " + number + " of " + slides.length);
+        position.setAttribute("aria-label", "Slide " + number + " of " + slides.length + (slides.length > 1 ? ". Go to slide" : ""));
         previous.disabled = number === 1;
         next.disabled = number === slides.length;
         document.dispatchEvent(new CustomEvent("bixing-notes:page", { detail: { slide: number } }));
@@ -755,6 +765,52 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
     }
     previous.addEventListener("click", () => displaySlide(current - 1));
     next.addEventListener("click", () => displaySlide(current + 1));
+    function closeJump(restoreFocus) {
+      jumpEditor.hidden = true;
+      position.hidden = false;
+      position.setAttribute("aria-expanded", "false");
+      if (restoreFocus) position.focus({ preventScroll: true });
+    }
+    position.addEventListener("click", () => {
+      if (!wideStage.matches && !previewPanel.hidden) setPreviews(false);
+      position.setAttribute("aria-expanded", "true");
+      position.hidden = true;
+      jumpEditor.hidden = false;
+      slideNumber.setCustomValidity("");
+      slideNumber.value = String(current);
+      slideNumber.focus({ preventScroll: true });
+      slideNumber.select();
+    });
+    function jumpToSlide() {
+      const value = slideNumber.value.trim();
+      const number = Number(value);
+      if (!/^\d+$/.test(value) || number < 1 || number > slides.length) {
+        slideNumber.setCustomValidity("Enter a slide number from 1 to " + slides.length + ".");
+        slideNumber.focus();
+        slideNumber.reportValidity();
+        return;
+      }
+      closeJump(true);
+      displaySlide(number);
+    }
+    slideNumber.addEventListener("input", () => slideNumber.setCustomValidity(""));
+    const jumpConfirm = document.getElementById("jump-confirm");
+    jumpConfirm.addEventListener("pointerdown", event => event.preventDefault());
+    jumpConfirm.addEventListener("click", jumpToSlide);
+    jumpEditor.addEventListener("keydown", event => {
+      event.stopPropagation();
+      if (event.isComposing || event.keyCode === 229) return;
+      if (event.key === "Escape") {
+        event.preventDefault();
+        closeJump(true);
+      } else if (event.key === "Enter" && event.target === slideNumber) {
+        event.preventDefault();
+        jumpToSlide();
+      }
+    });
+    jumpEditor.addEventListener("focusout", event => {
+      if (!jumpEditor.hidden && !jumpEditor.contains(event.relatedTarget)) closeJump(false);
+    });
     window.addEventListener("message", event => {
       if (!embedded || event.source !== window.parent) return;
       if (event.data?.type === "bixing-slide:go") {
@@ -766,7 +822,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
     });
 
     function scrollableEvidence(target) {
-      const region = target.closest(".evidence-scroll");
+      const region = target.closest(".evidence-scroll, [role='region'][tabindex]");
       return region && region.scrollWidth > region.clientWidth + 1;
     }
     document.addEventListener("keydown", event => {
@@ -806,6 +862,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
       document.body.classList.add("presenting");
       document.querySelector(".deck-tools").hidden = false;
       previewToggle.hidden = slides.length < 2;
+      position.disabled = slides.length < 2;
       if (!embedded) {
         try {
           const saved = localStorage.getItem(preferenceKey);
