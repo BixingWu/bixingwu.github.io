@@ -39,6 +39,7 @@ let currentLink = links[0];
 let hoverLink = null;
 let destination = null;
 let bottomLink = null;
+let resizedBottomScroll = null;
 let markerLink = null;
 let markerLeft = 0;
 let markerRight = 0;
@@ -77,29 +78,38 @@ if ("ResizeObserver" in window) {
   document.fonts?.addEventListener("loadingdone", alignMarker);
 }
 
+function anchorInset(section) {
+  return parseFloat(getComputedStyle(section).scrollMarginTop) || 0;
+}
+
 function updateNavigation() {
   const scroll = Math.max(0, window.scrollY);
   const progress = Math.min(1, scroll / 235);
   const fold = reducedMotion.matches ? Number(scroll > 0) : progress * progress * (3 - 2 * progress);
   const drift = reducedMotion.matches ? 0 : Math.min(1, scroll / cover.offsetHeight);
   const threshold = bar.offsetHeight + 24;
-  const atEnd = window.scrollY > 0 && Math.ceil(window.scrollY + window.innerHeight) >= root.scrollHeight - 2;
+  const limit = Math.max(0, root.scrollHeight - innerHeight);
+  const atEnd = scroll > 0 && Math.ceil(scroll) >= limit - 2;
   let active = 0;
   sections.forEach((section, index) => {
     if (section.getBoundingClientRect().top <= threshold) active = index;
   });
-  if (atEnd) active = bottomLink ? links.indexOf(bottomLink) : links.length - 1;
-  else bottomLink = null;
+  if (atEnd || (bottomLink && scroll === resizedBottomScroll)) {
+    active = bottomLink ? links.indexOf(bottomLink) : links.length - 1;
+  } else {
+    bottomLink = null;
+  }
+  // When the whole page fits, all anchors share the same scroll position.
+  if (!limit) active = Math.max(0, links.findIndex(link => link.hash === location.hash));
   if (destination) {
     // A native smooth scroll may pass another section on the way to the clicked anchor.
     active = links.indexOf(destination);
     const section = sections[active];
-    const inset = parseFloat(getComputedStyle(section).scrollMarginTop) || 0;
-    const top = scroll + section.getBoundingClientRect().top - inset;
-    const limit = Math.max(0, root.scrollHeight - innerHeight);
+    const top = scroll + section.getBoundingClientRect().top - anchorInset(section);
     if (Math.abs(scroll - Math.max(0, Math.min(top, limit))) < 2) {
       // Several anchors may share the bottom pixel. Keep the chosen one only there.
       bottomLink = atEnd ? destination : null;
+      resizedBottomScroll = null;
       destination = null;
     }
   }
@@ -122,6 +132,13 @@ function scheduleNavigation() {
 }
 window.addEventListener("scroll", scheduleNavigation, { passive: true });
 window.addEventListener("resize", () => {
+  if (bottomLink) {
+    const section = sections[links.indexOf(bottomLink)];
+    const top = section.getBoundingClientRect().top;
+    const remaining = root.scrollHeight - innerHeight - scrollY;
+    // Keep the explicit choice at this exact position if resizing leaves it visible and still clamped.
+    resizedBottomScroll = top < innerHeight && top - anchorInset(section) >= remaining ? scrollY : null;
+  }
   alignMarker();
   scheduleNavigation();
 });
@@ -253,6 +270,7 @@ if (dialog && typeof dialog.showModal === "function") {
       original.href = link.href;
       source.href = link.dataset.source;
       title.textContent = link.dataset.paper + " pipeline";
+      link.focus({ preventScroll: true });
       dialog.showModal();
       close.focus({ preventScroll: true });
       motion = animateFigure(thumb);
@@ -282,7 +300,7 @@ if (dialog && typeof dialog.showModal === "function") {
     clearMotion();
     dialog.removeAttribute("data-closing");
     closing = false;
-    opener?.focus({ preventScroll: true });
+    if (document.activeElement === document.body) opener?.focus({ preventScroll: true });
     opener = null;
   });
   reducedMotion.addEventListener("change", () => {

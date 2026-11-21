@@ -11,7 +11,7 @@
       if (appearance === "dark" || appearance === "light") document.documentElement.dataset.theme = appearance;
     } catch { /* Use system appearance when storage is unavailable. */ }
   </script>
-  <title>{{ .Title }} · {{ $profile.affiliation }}</title>
+  <title>{{ .Title }}</title>
   <meta name="description" content="{{ .Description }}">
   <link rel="canonical" href="{{ .Permalink }}">
   <meta property="og:type" content="website">
@@ -68,7 +68,9 @@
           {{ end }}
           {{ $sources = $sources | append (printf "%s %dw" $large.RelPermalink $large.Width) }}
           <img class="portrait" src="{{ $preview.RelPermalink }}" srcset="{{ delimit $sources ", " }}"
-               sizes="(max-width: 34rem) 27vw, (max-width: 54rem) 21vw, min(21vw, 19.5rem)"
+               sizes="(min-width: 38rem) and (max-height: 30rem) and (orientation: landscape) clamp(8rem, 17vw, 10rem),
+                      (min-width: 59rem) clamp(14rem, 18.5vw, 17.6rem), (max-width: 34rem) 27vw,
+                      (max-width: 46rem) clamp(7rem, 21vw, 10rem), (max-width: 54rem) clamp(9.8rem, 20vw, 11rem), min(21vw, 19.5rem)"
                width="{{ .Width }}" height="{{ .Height }}" fetchpriority="high" alt="{{ $profile.portrait_alt }}">
           {{ else }}
           <img class="portrait" src="{{ $profile.portrait }}" width="880" height="880" fetchpriority="high" alt="{{ $profile.portrait_alt }}">
@@ -103,18 +105,24 @@
             {{ $sources = $sources | append (printf "%s %dw" $scaled.RelPermalink $scaled.Width) }}
           {{ end }}
         {{ end }}
-        <article class="paper">
+        {{ $titleID := printf "paper-%s" (.short_name | urlize) }}
+        <article class="paper" aria-labelledby="{{ $titleID }}">
+          <h3 class="paper-title" id="{{ $titleID }}"><a href="{{ .url }}">
+            {{- range $i, $word := split .title " " -}}
+              {{- if $i }} {{ end -}}
+              {{- if in $word "-" }}<span>{{ $word }}</span>{{ else }}{{ $word }}{{ end -}}
+            {{- end -}}
+          </a></h3>
           <figure class="paper-visual">
             <figcaption class="venue">{{ .venue }}</figcaption>
-            <a href="{{ .figure }}" class="figure-link" data-paper="{{ .short_name }}" data-source="{{ .figure_source }}" aria-label="Open full-size {{ .short_name }} pipeline">
-              <img class="paper-figure" src="{{ $preview }}"
+            <a href="{{ .figure }}" class="figure-link" data-paper="{{ .short_name }}" data-source="{{ .figure_source }}" aria-label="Open full-size {{ .short_name }} pipeline" aria-describedby="{{ $titleID }}-figure">
+              <img class="paper-figure" id="{{ $titleID }}-figure" src="{{ $preview }}"
                    {{ with $sources }}srcset="{{ delimit . ", " }}" sizes="auto, (max-width: 27rem) 92vw, (max-width: 32rem) 37vw, (max-width: 54rem) clamp(13rem, 35vw, 17rem), min(29vw, 19rem)"{{ end }}
                    width="{{ $width }}" height="{{ $height }}" loading="lazy" decoding="async" alt="{{ .figure_alt }}">
               <svg class="icon enlarge" aria-hidden="true"><use href="#enlarge"/></svg>
             </a>
           </figure>
           <div class="citation">
-            <h3><a href="{{ .url }}">{{ .title }}</a></h3>
             <p class="authors">
               {{- $last := sub (len .authors) 1 -}}
               {{- range $i, $author := .authors -}}
@@ -122,12 +130,10 @@
                 <span class="author">{{ if eq (strings.TrimSuffix "*" $author) $.Title }}<strong>{{ $author }}</strong>{{ else }}{{ $author }}{{ end }}{{ if lt $i $last }},{{ end }}</span>{{ if lt $i $last }} {{ end -}}
               {{- end -}}
             </p>
-            <div class="paper-details">
-              <div class="resources" aria-label="Resources for {{ .short_name }}">
-                {{ with .pdf }}<a href="{{ . }}">Paper</a>{{ end }}
-                {{ with .code }}<a href="{{ . }}">Code</a>{{ end }}
-                {{ with .bibtex }}<a href="{{ . }}" download>BibTeX</a>{{ end }}
-              </div>
+            <div class="resources" role="group" aria-label="Resources for {{ .short_name }}">
+              {{ with .pdf }}<a href="{{ . }}">Paper</a>{{ end }}
+              {{ with .code }}<a href="{{ . }}">Code</a>{{ end }}
+              {{ with .bibtex }}<a href="{{ . }}" download>BibTeX</a>{{ end }}
             </div>
           </div>
         </article>
@@ -161,7 +167,7 @@
       <button id="figure-close" type="button">Close</button>
     </div>
     <div class="figure-stage">
-      <a id="figure-original" aria-label="Open full-resolution image" title="Open full-resolution image">
+      <a id="figure-original" aria-label="Open full-resolution image" aria-describedby="figure-detail" title="Open full-resolution image">
         <img id="figure-detail" alt="">
         <svg class="icon enlarge" aria-hidden="true"><use href="#enlarge"/></svg>
       </a>
