@@ -3,10 +3,11 @@ title: Bixing Wu
 description: Academic homepage of Bixing Wu, an undergraduate at Zhejiang University working on active visual perception, efficient video understanding, and multimodal learning.
 params:
   profile:
-    chinese_name: 吴必兴
     affiliation: Zhejiang University
     role: Undergraduate researcher
     email: bixing.wu.cs@gmail.com
+    scholar: "https://scholar.google.com/citations?user=Hl4P2kYAAAAJ&hl=en"
+    github: https://github.com/BixingWu
     portrait: assets/portrait.jpg
     portrait_alt: "My illustrated avatar: a figure facing the sea beneath an orange and blue sunset."
   contribution_note: "* Equal contribution"
@@ -56,14 +57,20 @@ params:
       bibtex: assets/huper.bib
   experience:
     - institution: Zhejiang University
+      logo: assets/zju-mark.png
+      homepage: https://www.zju.edu.cn/english/
       dates: Sep 2023 – present
       role: B.Eng. student in Microelectronic Science and Engineering
       detail: Advanced Class of Engineering Education, Chu Kochen Honors College
     - institution: The University of Hong Kong
+      logo: assets/hku-mark.svg
+      homepage: https://www.hku.hk/
       dates: Jul – Aug 2026
       role: Student Research Assistant, School of Computing and Data Science
       detail: Advisor · Prof. Hengshuang Zhao
     - institution: University of California, Berkeley
+      logo: assets/berkeley-mark.svg
+      homepage: https://www.berkeley.edu/
       dates: Aug 2025 – May 2026
       role: Research Intern, Berkeley Speech Group
       detail: Advisor · Prof. Gopala Anumanchipalli
