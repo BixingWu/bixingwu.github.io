@@ -67,7 +67,12 @@
         <h2 id="works-heading">Selected publications</h2>
         {{ range .Params.publications }}
         <article class="paper">
-          <img class="paper-figure" src="{{ .figure }}" width="720" height="480" loading="lazy" alt="{{ .figure_alt }}">
+          <figure class="paper-visual">
+            <a href="{{ .figure }}" class="figure-link" aria-label="Open full-size {{ .short_name }} pipeline">
+              <img class="paper-figure" src="{{ .figure }}" width="{{ .figure_width }}" height="{{ .figure_height }}" loading="lazy" alt="{{ .figure_alt }}">
+            </a>
+            <figcaption><a href="{{ .figure_source }}">{{ .figure_label }}</a></figcaption>
+          </figure>
           <div>
             <p class="venue">{{ .venue }}</p>
             <h3><a href="{{ .url }}">{{ .title }}</a></h3>

@@ -23,7 +23,11 @@ params:
       contribution: "* Equal contribution"
       summary: AHA uses structure learned from audio to teach a video model which information the two modalities share.
       figure: assets/aha.png
-      figure_alt: Illustration of video frames aligned with an audio waveform.
+      figure_width: 1994
+      figure_height: 928
+      figure_source: "https://arxiv.org/html/2602.03570v2#S3.F2"
+      figure_label: Figure 2 · AHA
+      figure_alt: AHA architecture showing audio and video encoders, the shared semantic anchor, local sliding alignment, and the gradient-reversal adversarial decoupler.
       url: https://arxiv.org/abs/2602.03570
       pdf: https://arxiv.org/pdf/2602.03570
       bibtex: assets/aha.bib
@@ -46,7 +50,11 @@ params:
       contribution: "* Equal contribution"
       summary: HuPER adjusts how much it relies on the speech signal and on linguistic expectations when identifying speech sounds.
       figure: assets/huper.png
-      figure_alt: Illustration of acoustic evidence feeding into three phonetic inference paths.
+      figure_width: 2000
+      figure_height: 762
+      figure_source: "https://arxiv.org/html/2602.01634v2#S1.F2"
+      figure_label: Figure 2 · HuPER
+      figure_alt: HuPER's speech encoder and decoder feed a scheduler that selects a route for prompted reading, spontaneous speech, or less intelligible speech.
       url: https://arxiv.org/abs/2602.01634
       pdf: https://arxiv.org/pdf/2602.01634
       code: https://github.com/Berkeley-Speech-Group/HuPER
