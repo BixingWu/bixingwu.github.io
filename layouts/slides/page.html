@@ -4,8 +4,8 @@
     <a class="gate-home" href="{{ site.Home.RelPermalink }}">{{ site.Title }}</a>
     <h1 id="gate-title">Shared slides</h1>
     <form id="unlock-form">
-      <label for="access-key">Access key</label>
-      <input id="access-key" type="password" autocomplete="off" spellcheck="false" autocapitalize="none" required>
+      <label for="access-key">Access code</label>
+      <input id="access-key" type="password" placeholder="xxxx-xxxx-xxxx" autocomplete="off" spellcheck="false" autocapitalize="none" required>
       <button id="unlock-slides" type="submit">Open slides</button>
     </form>
     <p id="unlock-status" role="status" aria-live="polite"></p>
@@ -13,4 +13,7 @@
   </section>
   <iframe id="slide-viewer" title="Shared presentation" sandbox="allow-scripts" referrerpolicy="no-referrer" hidden></iframe>
 </main>
+{{ $notes := findRE `(?s)<!-- meeting-notes:start -->.*?<!-- meeting-notes:end -->` (readFile "tools/slides-template.html") }}
+{{ if ne (len $notes) 1 }}{{ errorf "The slide template must contain one discussion notes section" }}{{ end }}
+{{ range $notes }}{{ . | safeHTML }}{{ end }}
 {{ end }}

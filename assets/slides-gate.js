@@ -52,8 +52,13 @@
   }
   function applySlideHash() {
     if (!viewerReady) return;
+    const number = slideNumber();
     // The sandbox has an opaque origin, so messaging is bound to this frame's window.
-    viewer.contentWindow.postMessage({ type: "bixing-slide:go", number: slideNumber() }, "*");
+    viewer.contentWindow.postMessage({ type: "bixing-slide:go", number }, "*");
+    selectNotesPage(number);
+  }
+  function selectNotesPage(number) {
+    document.dispatchEvent(new CustomEvent("bixing-notes:page", { detail: { slide: number } }));
   }
   viewer.addEventListener("load", () => {
     if (!opened) return;
@@ -62,10 +67,11 @@
   });
   window.addEventListener("message", event => {
     const message = event.data;
-    if (!viewerReady || event.source !== viewer.contentWindow || event.origin !== "null" ||
+    if (!opened || !viewerReady || event.source !== viewer.contentWindow || event.origin !== "null" ||
         message?.type !== "bixing-slide:change" || !Number.isSafeInteger(message.number) || message.number < 1) return;
     const hash = message.number === 1 ? "" : "#" + message.number;
     if (location.hash !== hash) history.replaceState(history.state, "", location.pathname + location.search + hash);
+    selectNotesPage(message.number);
   });
 
   async function decrypt(payload, code) {

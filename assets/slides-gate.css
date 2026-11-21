@@ -1,24 +1,24 @@
 :root {
-  color-scheme: light dark;
-  font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
-  color: light-dark(#213544, #eff3f4);
-  background: light-dark(#f6f7f5, #111c28);
+  color-scheme: light;
+  font-family: "Open Sans", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+  color: #171717;
+  background: #fff;
   -webkit-font-smoothing: antialiased;
 }
 * { box-sizing: border-box; }
 body { margin: 0; min-height: 100dvh; display: grid; place-items: center; }
 [hidden] { display: none !important; }
 .gate-card { width: min(calc(100vw - 2.4rem), 25rem); margin: 2rem auto; padding: 1rem 0; }
-.gate-home { color: light-dark(#315d78, #aacfe4); font-size: .89rem; font-weight: 590; text-decoration: none; }
+.gate-home { color: #1c4587; font-size: .89rem; font-weight: 600; text-decoration: none; }
 .gate-home:hover { text-decoration: underline; }
 h1 { margin: 1.15rem 0 1.35rem; font-size: clamp(2.3rem, 8vw, 3.1rem); line-height: 1.04; letter-spacing: -.047em; font-weight: 600; }
-p, noscript { line-height: 1.6; color: light-dark(#506271, #b1c1cc); }
+p, noscript { line-height: 1.6; color: #595959; }
 form { display: grid; gap: .55rem; }
 label { font-size: .9rem; }
 input, button { font: inherit; min-height: 2.85rem; padding: .65rem .85rem; border-radius: .45rem; }
-input { width: 100%; border: 1px solid light-dark(#a6b9c1, #607782); background: light-dark(#fff, #182939); color: inherit; }
-button { margin-top: .2rem; border: none; background: light-dark(#315d78, #aacfe4); color: light-dark(white, #112431); font-weight: 590; cursor: pointer; }
+input { width: 100%; border: 1px solid #a6a9ad; background: #fff; color: inherit; }
+button { margin-top: .2rem; border: none; background: #1c4587; color: #fff; font-weight: 600; cursor: pointer; }
 button:disabled { opacity: .65; cursor: wait; }
-:focus-visible { outline: 2px solid light-dark(#315d78, #aacfe4); outline-offset: 3px; }
+:focus-visible { outline: 2px solid #1c4587; outline-offset: 3px; }
 #unlock-status:empty { display: none; }
 #slide-viewer { display: block; width: 100vw; height: 100dvh; border: 0; }
