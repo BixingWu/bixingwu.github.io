@@ -333,7 +333,8 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
     }
     * { box-sizing: border-box; }
     body { margin: 0; background: var(--page); color: var(--ink); }
-    main { min-height: 0; touch-action: pan-y pinch-zoom; }
+    main { min-height: 0; }
+    .slide:not(:has(.evidence-scroll)), .slide-heading, .slide figcaption, .evidence-stack > p { touch-action: pan-y pinch-zoom; }
     .slide { display: grid; align-content: start; align-items: start; gap: clamp(1.25rem, 3.8vh, 3rem);
       min-height: min(100vh, 49rem); padding: clamp(1.05rem, 3.3vh, 2.65rem) var(--edge);
       border-bottom: 1px solid var(--line); overflow-wrap: anywhere; }
@@ -361,14 +362,24 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
     .trajectory-list li + li { border-inline-start: 1px dashed #b7b7b7; }
     .trajectory-list h3 { margin-bottom: .48em; }
     .trajectory-list :is(h3,p) { font-family: "Lato", sans-serif; }
-    .comparison-plots { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: clamp(1rem, 2.5vw, 3rem); max-width: 70rem; }
+    .evidence-stack { display: grid; grid-template-columns: minmax(0,1fr); min-width: 0; gap: clamp(.85rem, 2.7vh, 2rem); }
+    .evidence-stack > p { max-width: 62ch; }
+    .comparison-plots { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: clamp(1rem, 2.5vw, 3rem); }
+    .evidence-scroll { min-width: 0; overflow-x: auto; overscroll-behavior-x: contain; touch-action: pan-x pan-y pinch-zoom; }
+    .evidence-scroll:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+    .data-table { width: 100%; min-width: 34rem; border-collapse: collapse; border-block: 1.5px solid var(--ink); color: var(--ink); text-align: center; font: 400 clamp(1rem,1.85vw,2rem)/1.35 "Lato",sans-serif; font-variant-numeric: tabular-nums; }
+    .data-table thead { border-bottom: 1px solid #888; }
+    .data-table :is(th,td) { padding: clamp(.38rem,1.25vh,.95rem) .45rem; }
+    .data-table th { font-weight: 700; }
+    .data-table tr > :first-child { position: sticky; inset-inline-start: 0; background: var(--page); text-align: left; }
     .plot { color: var(--ink); font: 18px "Lato", -apple-system, sans-serif; }
     .cover-graphic .guide { stroke: var(--line); }
     .cover-graphic .signal { fill: none; stroke: var(--ink); stroke-linejoin: round; stroke-linecap: round; }
     .plot .observed { fill: var(--guide); stroke: var(--page); }
     .cover-graphic .observed { fill: var(--ink); stroke: var(--page); }
     .plot text { fill: currentColor; }
-    .method-figure { width: min(100%, 60rem); }
+    .method-figure { width: 100%; min-width: 0; }
+    .method-figure .slide-figure { min-width: 28rem; }
     .method-figure text { fill: var(--ink); font: 17px "Lato", sans-serif; }
     .method-figure .cell { fill: var(--wash); stroke: var(--guide); }
     .method-figure .process { fill: #eee; stroke: #929292; }
@@ -395,6 +406,9 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
       .presenting .cover .byline { margin-top: 7cqh; }
       .presenting .cover-graphic { margin-top: -7cqh; }
     }
+    @media (min-width: 60rem) {
+      .method-figure text { font-size: 12px; }
+    }
     @media (max-width: 43rem) {
       .slide { gap: 1.3rem; padding-block: clamp(1.3rem, 4.2vh, 2.25rem); }
       .slide .section-label { color: #737373; }
@@ -418,8 +432,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
       .slide p, .slide li, .slide dd { font-size: 1rem; }
       .slide h3 { font-size: 1.2rem; }
       .cover .byline { margin-top: 1rem; }
-      .slide-figure { max-height: 39vh; }
-      .slide figcaption { margin-top: .28rem; font-size: .82rem; }
+      .slide figcaption { margin-top: .28rem; font-size: .95rem; }
     }
     @media (max-width: 22rem) and (max-height: 39rem) {
       .slide.evidence { padding-block: .65rem; gap: .65rem; }
@@ -460,16 +473,27 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
         </g>
       </svg>
     </section>
-    <section class="slide trajectory" data-slide-title="Research trajectory">
+    <section class="slide trajectory" data-slide-title="Sampling schedule">
       <header class="slide-heading">
-        <p class="section-label">Research trajectory</p>
+        <p class="section-label">Research</p>
         <h2>When does sampling miss a peak?</h2>
       </header>
-      <ol class="trajectory-list" role="list">
-        <li><h3>Define the signal</h3><p>Use a triangular pulse with a known peak of 1 at time 3.</p></li>
-        <li><h3>Choose the grid</h3><p>Observe the pulse at times 0, 2, 4 and 6.</p></li>
-        <li><h3>Compare the peaks</h3><p>Measure the gap between the true maximum and the largest sample.</p></li>
-      </ol>
+      <div class="evidence-stack">
+        <p><strong>Hypothesis.</strong> Two grids with the same interval can record different maxima when the pulse peaks between observations.</p>
+        <figure>
+          <div class="evidence-scroll" role="region" tabindex="0" aria-label="Sampling schedule by time">
+            <table class="data-table">
+              <thead><tr><th scope="col">Time</th><th scope="col">0</th><th scope="col">1</th><th scope="col">2</th><th scope="col">3</th><th scope="col">4</th><th scope="col">5</th><th scope="col">6</th></tr></thead>
+              <tbody>
+                <tr><th scope="row">Pulse</th><td>0</td><td>⅓</td><td>⅔</td><td>1</td><td>⅔</td><td>⅓</td><td>0</td></tr>
+                <tr><th scope="row">Even grid</th><td>0</td><td>–</td><td>⅔</td><td>–</td><td>⅔</td><td>–</td><td>0</td></tr>
+                <tr><th scope="row">Odd grid</th><td>–</td><td>⅓</td><td>–</td><td>1</td><td>–</td><td>⅓</td><td>–</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <figcaption>Each row uses the same pulse. A dash marks an unsampled time.</figcaption>
+        </figure>
+      </div>
     </section>
     <section class="slide evidence" data-slide-title="Comparing sampling grids">
       <header class="slide-heading">
@@ -506,20 +530,25 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
         <p class="section-label">Design</p>
         <h2>How the shifted grid samples the pulse</h2>
       </header>
-      <figure class="method-figure">
-        <svg class="slide-figure" viewBox="0 0 510 160" role="img" aria-label="Sampling times 1, 3 and 5 yield amplitudes of one third, one and one third.">
-          <text x="0" y="29">Time</text>
-          <g class="cell"><rect x="109" y="8" width="88" height="30"/><rect x="234" y="8" width="88" height="30"/><rect x="359" y="8" width="88" height="30"/></g>
-          <g text-anchor="middle"><text x="153" y="29">1</text><text x="278" y="29">3</text><text x="403" y="29">5</text></g>
-          <g class="pointer"><path d="M153 39V57m125-18v18m125-18v18"/></g>
-          <rect class="process" x="101" y="57" width="354" height="32" rx="2"/>
-          <text x="278" y="79" text-anchor="middle">Evaluate the triangular pulse</text>
-          <g class="pointer"><path d="M153 90v28m-4-5 4 5 4-5m121-23v28m-4-5 4 5 4-5m121-23v28m-4-5 4 5 4-5"/></g>
-          <text x="0" y="143">Amplitude</text>
-          <g text-anchor="middle"><text x="153" y="143">⅓</text><text x="278" y="143">1</text><text x="403" y="143">⅓</text></g>
-        </svg>
-        <figcaption>Only the grid offset changes. The signal and the two-unit interval stay fixed.</figcaption>
-      </figure>
+      <div class="evidence-stack">
+        <p>Keep the two-unit interval and move the first sample from time 0 to time 1.</p>
+        <figure class="method-figure">
+          <div class="evidence-scroll" role="region" tabindex="0" aria-label="Diagram of the sampling procedure">
+            <svg class="slide-figure" viewBox="0 0 510 160" role="img" aria-label="Sampling times 1, 3 and 5 yield amplitudes of one third, one and one third.">
+              <text x="0" y="29">Time</text>
+              <g class="cell"><rect x="109" y="8" width="88" height="30"/><rect x="234" y="8" width="88" height="30"/><rect x="359" y="8" width="88" height="30"/></g>
+              <g text-anchor="middle"><text x="153" y="29">1</text><text x="278" y="29">3</text><text x="403" y="29">5</text></g>
+              <g class="pointer"><path d="M153 39V57m125-18v18m125-18v18"/></g>
+              <rect class="process" x="101" y="57" width="354" height="32" rx="2"/>
+              <text x="278" y="79" text-anchor="middle">Evaluate the triangular pulse</text>
+              <g class="pointer"><path d="M153 90v28m-4-5 4 5 4-5m121-23v28m-4-5 4 5 4-5m121-23v28m-4-5 4 5 4-5"/></g>
+              <text x="0" y="143">Amplitude</text>
+              <g text-anchor="middle"><text x="153" y="143">⅓</text><text x="278" y="143">1</text><text x="403" y="143">⅓</text></g>
+            </svg>
+          </div>
+          <figcaption>The middle observation lands at time 3, where the pulse reaches its maximum.</figcaption>
+        </figure>
+      </div>
     </section>
     <!-- deck-slides:end -->
   </main>
@@ -567,9 +596,13 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
       }
     });
 
+    function scrollableEvidence(target) {
+      const region = target.closest(".evidence-scroll");
+      return region && region.scrollWidth > region.clientWidth + 1;
+    }
     document.addEventListener("keydown", event => {
       if (event.defaultPrevented || document.querySelector("dialog[open]") || event.altKey || event.ctrlKey || event.metaKey ||
-          event.target.isContentEditable || event.target.closest("input, select, textarea")) return;
+          event.target.isContentEditable || event.target.closest("input, select, textarea") || scrollableEvidence(event.target)) return;
       const target = { ArrowLeft: current - 1, ArrowRight: current + 1, Home: 1, End: slides.length }[event.key];
       if (target === undefined) return;
       event.preventDefault();
@@ -578,7 +611,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
     let touchStart;
     deck.addEventListener("pointerdown", event => {
       if (event.pointerType !== "touch") return;
-      if (!event.isPrimary || event.target.closest("a, button, input, select, textarea, [contenteditable]")) {
+      if (!event.isPrimary || event.target.closest("a, button, input, select, textarea, [contenteditable]") || scrollableEvidence(event.target)) {
         touchStart = null;
         return;
       }
@@ -605,35 +638,25 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
   body.presenting.mn-standalone { grid-template-rows: minmax(0,1fr) auto auto; overflow: hidden; }
   body.mn-host { width: 100%; height: 100vh; height: 100dvh; min-height: 0; display: grid; grid-template-rows: minmax(0,1fr) auto; place-items: stretch; overflow: hidden; }
   body.mn-host > #slides-gate, body.mn-host #slide-viewer { display: block; min-width: 0; min-height: 0; width: 100%; height: 100%; }
-  #meeting-notes { box-sizing: border-box; min-width: 0; margin: 0; padding: .2rem clamp(.7rem,3.5vw,3.3rem) max(.24rem, env(safe-area-inset-bottom)); border-top: 1px solid #d6d8db; color-scheme: light; color: #18191a; background: #fff; text-align: left; font: 400 .9rem/1.4 system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif; }
+  #meeting-notes { display: grid; grid-template-columns: auto minmax(0,1fr) auto; align-items: baseline; column-gap: .8rem; box-sizing: border-box; min-width: 0; margin: 0; padding: .28rem max(clamp(1.1rem,2.8vw,3.8rem),env(safe-area-inset-right)) max(.28rem,env(safe-area-inset-bottom)) max(clamp(1.1rem,2.8vw,3.8rem),env(safe-area-inset-left)); border-top: 1px solid #d9d9d9; color-scheme: light; color: #000; background: #fff; text-align: left; font: 400 1rem/1.4 "Lato","Open Sans",system-ui,"PingFang SC","Microsoft YaHei",sans-serif; }
   #meeting-notes[hidden] { display: none !important; }
-  #meeting-notes .mn-header { display: flex; align-items: center; gap: .6rem; min-width: 0; }
-  #meeting-notes label { padding: 0; margin: 0; font-family: inherit; font-size: .75rem; line-height: 1.25; font-weight: 550; color: #4c4f53; }
-  #meeting-notes .mn-status { margin-left: auto; font-size: .73rem; color: #65696d; }
+  #meeting-notes label { margin: 0; white-space: nowrap; font: 600 .82rem/1.3 "Open Sans",system-ui,sans-serif; color: #595959; }
+  #meeting-notes .mn-status { text-align: right; font-size: .78rem; color: #595959; }
+  #meeting-notes .mn-status:empty { display: none; }
   #meeting-notes .mn-status[data-unsaved] { color: #980000; }
-  #meeting-notes button { box-sizing: border-box; min-width: 2.4rem; min-height: 1.7rem; margin: 0; border: 0; border-radius: .2rem; padding: .2rem .35rem; color: #1c4587; background: #fff; font: 500 .77rem/1.15 system-ui,sans-serif; cursor: pointer; }
-  #meeting-notes button:focus-visible { outline: 2px solid #1c4587; outline-offset: -2px; }
-  #meeting-notes-text { display: block; box-sizing: border-box; width: 100%; height: 2.1rem; min-height: 0; margin: 0; border: 0; border-radius: 0; padding: .3rem 0; color: #18191a; background: #fff; font: 400 1rem/1.45 system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif; resize: none; overflow: auto; }
-  #meeting-notes-text::placeholder { color: #676b70; opacity: 1; }
+  #meeting-notes-text { display: block; field-sizing: content; box-sizing: border-box; width: 100%; min-width: 0; min-height: 1.6rem; max-height: clamp(3.2rem,16dvh,7rem); margin: 0; border: 0; border-radius: 0; padding: .05rem .15rem; color: #000; background: #fff; font: inherit; resize: none; overflow: auto; }
+  #meeting-notes-text::placeholder { color: #686868; opacity: 1; }
   #meeting-notes-text:focus-visible { outline: none; box-shadow: inset 0 -1px #1c4587; }
-  #meeting-notes[data-expanded] #meeting-notes-text { height: clamp(4.5rem,15dvh,8rem); }
-  @media (max-width: 40rem) {
-    #meeting-notes { padding-inline: max(.75rem, env(safe-area-inset-left)) max(.75rem, env(safe-area-inset-right)); }
-    #meeting-notes button { min-height: 1.9rem; }
-    #meeting-notes-text { height: 2.55rem; }
-  }
-  @media (max-height: 32rem) and (orientation: landscape) {
-    #meeting-notes[data-expanded] #meeting-notes-text { height: 3.4rem; }
+  @media (max-width: 32rem) {
+    #meeting-notes { grid-template-columns: auto minmax(0,1fr); column-gap: .55rem; }
+    #meeting-notes .mn-status { grid-column: 2; text-align: left; }
   }
   @media print { #meeting-notes { display: none !important; } }
 </style>
-<aside id="meeting-notes" aria-label="本页笔记" lang="zh-CN" hidden>
-  <div class="mn-header">
-    <label for="meeting-notes-text" id="meeting-notes-label">本页笔记</label>
-    <span class="mn-status" id="meeting-notes-status" role="status"></span>
-    <button type="button" id="meeting-notes-size" aria-controls="meeting-notes-text" aria-expanded="false">展开</button>
-  </div>
-  <textarea id="meeting-notes-text" rows="1" placeholder="点击添加本页笔记…" spellcheck="true"></textarea>
+<aside id="meeting-notes" aria-label="Slide notes" lang="en" hidden>
+  <label for="meeting-notes-text" id="meeting-notes-label">Slide notes</label>
+  <textarea id="meeting-notes-text" rows="1" placeholder="Add a note…" spellcheck="true"></textarea>
+  <span class="mn-status" id="meeting-notes-status" role="status"></span>
 </aside>
 <script>
 (() => {
@@ -647,12 +670,18 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
   const field = document.getElementById("meeting-notes-text");
   const label = document.getElementById("meeting-notes-label");
   const status = document.getElementById("meeting-notes-status");
-  const size = document.getElementById("meeting-notes-size");
+  const nativeSizing = CSS.supports("field-sizing", "content");
   const scope = gate ? "report:" + gate.dataset.id : "document:" + location.pathname;
   const prefix = "bixing:slide-notes:v1:" + scope + ":";
   const drafts = new Map();
   const unsaved = new Set();
   let current = 0;
+
+  function fitField() {
+    if (nativeSizing || panel.hidden) return;
+    field.style.height = "auto";
+    field.style.height = field.scrollHeight + "px";
+  }
 
   function feedback(text, failed = false) {
     status.toggleAttribute("data-unsaved", failed);
@@ -661,44 +690,40 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
   function save() {
     if (!current) return;
     const value = field.value;
+    fitField();
     drafts.set(current, value);
     try {
       if (value) localStorage.setItem(prefix + current, value);
       else localStorage.removeItem(prefix + current);
       unsaved.delete(current);
-      feedback(value ? "已保存到本机" : "");
+      feedback(value ? "Saved on this device" : "");
     } catch {
       unsaved.add(current);
-      feedback("未保存到本机，可复制文本", true);
+      feedback("Unsaved. Copy your note.", true);
     }
   }
   function selectPage(number) {
     if (!Number.isSafeInteger(number) || number < 1 || number === current) return;
     if (gate && (!/^[0-9a-f]{32}$/.test(gate.dataset.id) || document.getElementById("slide-viewer").hidden || !document.getElementById("gate-heading").hidden)) return;
     if (current && unsaved.has(current)) save();
-    if (current && document.activeElement !== field) expand(false);
     current = number;
-    label.textContent = "第 " + number + " 页笔记";
+    label.textContent = "Slide " + number + " notes";
     let value = drafts.get(number) || "";
     if (!unsaved.has(number)) {
       try {
         value = localStorage.getItem(prefix + number) || "";
-        feedback(value ? "已保存到本机" : "");
+        feedback(value ? "Saved on this device" : "");
       } catch {
-        feedback("本机存储不可用", true);
+        feedback("Local storage unavailable", true);
       }
     } else {
-      feedback("未保存到本机，可复制文本", true);
+      feedback("Unsaved. Copy your note.", true);
     }
     drafts.set(number, value);
     field.value = value;
     panel.hidden = false;
+    fitField();
     document.body.classList.add(gate ? "mn-host" : "mn-standalone");
-  }
-  function expand(expanded) {
-    panel.toggleAttribute("data-expanded", expanded);
-    size.setAttribute("aria-expanded", String(expanded));
-    size.textContent = expanded ? "收起" : "展开";
   }
 
   document.addEventListener("bixing-notes:page", event => selectPage(event.detail?.slide));
@@ -709,25 +734,22 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
   }
   field.addEventListener("input", save);
   field.addEventListener("compositionend", save);
-  field.addEventListener("focus", () => expand(true));
   panel.addEventListener("keydown", event => {
     event.stopPropagation();
     if (event.key === "Escape" && !event.isComposing && event.keyCode !== 229) {
-      expand(false);
-      size.focus();
+      field.blur();
     }
   });
-  size.addEventListener("click", () => {
-    const expanded = !panel.hasAttribute("data-expanded");
-    expand(expanded);
-    if (expanded) field.focus();
-  });
+  if (!nativeSizing) window.addEventListener("resize", fitField);
   window.addEventListener("storage", event => {
     if (!current || event.key !== prefix + current || unsaved.has(current)) return;
     const value = event.newValue || "";
     drafts.set(current, value);
-    if (document.activeElement !== field) field.value = value;
-    feedback(value ? "已保存到本机" : "");
+    if (document.activeElement !== field) {
+      field.value = value;
+      fitField();
+    }
+    feedback(value ? "Saved on this device" : "");
   });
 })();
 </script>

@@ -100,7 +100,7 @@
     status.textContent = "Opening presentation…";
     let failure = "The encrypted presentation could not be loaded. Try again.";
     try {
-      const response = await fetch("./deck.bin", {
+      const response = await fetch(gate.dataset.payload || "./deck.bin", {
         mode: "same-origin", credentials: "omit", redirect: "error", referrerPolicy: "no-referrer", signal: request.signal
       });
       if (!response.ok) throw new Error("Unavailable presentation");

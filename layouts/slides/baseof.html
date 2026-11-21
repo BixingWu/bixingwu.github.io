@@ -9,7 +9,16 @@
   <title>Shared slides · Bixing Wu</title>
   <link rel="icon" href="{{ "assets/icon.png" | relURL }}" type="image/png">
   {{ with resources.Get "assets/slides-gate.css" | fingerprint }}<link rel="stylesheet" href="{{ .RelPermalink }}">{{ end }}
-  {{ if .IsPage }}{{ with resources.Get "assets/slides-gate.js" | fingerprint }}<script src="{{ .RelPermalink }}" defer></script>{{ end }}{{ end }}
+  {{ if .IsPage }}
+    {{ $template := readFile "tools/slides-template.html" }}
+    {{ $fonts := findRE `(?s)<style id="report-fonts">.*?</style>` $template }}
+    {{ $license := findRE `(?s)<!-- Bundled typefaces and licenses.*?-->` $template }}
+    {{ if or (ne (len $fonts) 1) (ne (len $license) 1) }}{{ errorf "The slide template must contain the report fonts and their licenses." }}{{ end }}
+    {{ (index $fonts 0) | safeHTML }}
+    {{ $credit := strings.TrimSuffix "-->" (strings.TrimPrefix "<!-- " (index $license 0)) }}
+    {{ with resources.FromString "assets/report-font-licenses.txt" $credit }}<link rel="license" href="{{ .RelPermalink }}">{{ end }}
+    {{ with resources.Get "assets/slides-gate.js" | fingerprint }}<script src="{{ .RelPermalink }}" defer></script>{{ end }}
+  {{ end }}
 </head>
 <body>
   {{ block "main" . }}{{ end }}

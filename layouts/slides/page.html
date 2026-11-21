@@ -1,5 +1,9 @@
 {{ define "main" }}
-<main id="slides-gate" data-id="{{ path.Base .File.Dir }}">
+{{ $id := default (path.Base .File.Dir) .Params.report_id }}
+{{ $filename := cond (isset .Params "report_id") (printf "deck-%s.bin" $id) "deck.bin" }}
+{{ $payload := .Resources.Get $filename }}
+{{ if not $payload }}{{ errorf "Missing encrypted slide resource %s for %s" $filename .Path }}{{ end }}
+<main id="slides-gate" data-id="{{ $id }}" data-payload="{{ $payload.RelPermalink }}">
   <section id="gate-heading" class="gate-card" aria-labelledby="gate-title">
     <a class="gate-home" href="{{ site.Home.RelPermalink }}">{{ site.Title }}</a>
     <h1 id="gate-title">Shared slides</h1>

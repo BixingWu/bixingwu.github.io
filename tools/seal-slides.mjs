@@ -1,18 +1,24 @@
 import { createCipheriv, pbkdf2Sync, randomBytes } from 'node:crypto';
 import { constants } from 'node:fs';
-import { lstat, mkdir, mkdtemp, open, realpath, rename, rm, writeFile } from 'node:fs/promises';
+import { link, lstat, mkdir, mkdtemp, open, readFile, readdir, realpath, rename, rm, rmdir, unlink, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const repository = await realpath(fileURLToPath(new URL('../', import.meta.url)));
-const frontMatter = `---
+function manifest(project, id) {
+  const routing = project ? `type: slides
+url: /GroupMeeting/${project}/
+report_id: "${id}"
+` : '';
+  return `---
 title: Shared slides
-build:
+${routing}build:
   list: never
-sitemap:
+${project ? '  publishResources: false\n' : ''}sitemap:
   disable: true
 ---
 `;
+}
 
 function insideRepository(filename) {
   const relative = path.relative(repository, filename);
@@ -107,10 +113,10 @@ function checkStaticResources(html) {
   }
 }
 
-async function outputDirectory() {
+async function outputDirectory(section) {
   const content = path.join(repository, 'content');
   if (!(await lstat(content)).isDirectory()) throw new Error('The site content directory must be a regular directory.');
-  const slides = path.join(content, 'slides');
+  const slides = path.join(content, section);
   await mkdir(slides, { recursive: true });
   if (!(await lstat(slides)).isDirectory() || await realpath(slides) !== slides) {
     throw new Error('The slide output directory must be inside the site and cannot be a symbolic link.');
@@ -118,10 +124,7 @@ async function outputDirectory() {
   return slides;
 }
 
-async function seal(filename) {
-  const html = await readDeck(filename);
-  const directory = await outputDirectory();
-  const id = randomBytes(16).toString('hex');
+function encrypt(html, id) {
   const alphabet = '0123456789abcdefghjkmnpqrstvwxyz';
   const passcode = Array.from(randomBytes(12), byte => alphabet[byte & 31]).join('');
   const context = Buffer.from(`bixingwu.com/slides/v1/${id}`, 'utf8');
@@ -130,30 +133,109 @@ async function seal(filename) {
   const cipher = createCipheriv('aes-256-gcm', key, iv, { authTagLength: 16 });
   cipher.setAAD(context);
   const payload = Buffer.concat([Buffer.from('BWS1', 'ascii'), iv, cipher.update(html), cipher.final(), cipher.getAuthTag()]);
-  const staging = await mkdtemp(path.join(directory, '.seal-'));
-  let published = false;
-  try {
-    await writeFile(path.join(staging, 'deck.bin'), payload, { flag: 'wx' });
-    await writeFile(path.join(staging, 'index.md'), frontMatter, { flag: 'wx' });
-    const destination = path.join(directory, id);
-    try {
-      await lstat(destination);
-      throw new Error('The generated slide address already exists. Run the command again.');
-    } catch (error) {
-      if (error.code !== 'ENOENT') throw error;
-    }
-    await rename(staging, destination);
-    published = true;
-  } finally {
-    if (!published) await rm(staging, { recursive: true, force: true });
+  return { passcode, payload };
+}
+
+async function replaceProject(staging, destination, project, filename) {
+  if (!(await lstat(destination)).isDirectory() || await realpath(destination) !== destination) {
+    throw new Error('The project bundle must be a regular site directory.');
   }
-  return `https://bixingwu.com/slides/${id}/#p=${passcode.match(/.{4}/g).join('-')}`;
+  const index = path.join(destination, 'index.md');
+  if (!(await lstat(index)).isFile()) throw new Error('This project has no regular slide manifest.');
+  const current = await readFile(index, 'utf8');
+  const oldId = /^report_id: "([0-9a-f]{32})"$/m.exec(current)?.[1];
+  if (!oldId || current !== manifest(project, oldId)) {
+    throw new Error('This directory is not a project managed by the slide packager.');
+  }
+
+  // Install the new ciphertext exclusively before atomically changing the reader's manifest.
+  const newPayload = path.join(destination, filename);
+  await link(path.join(staging, filename), newPayload);
+  try {
+    await rename(path.join(staging, 'index.md'), index);
+  } catch (error) {
+    await unlink(newPayload);
+    throw error;
+  }
+}
+
+async function publish(staging, directory, project, id, replace, filename) {
+  const name = project || id;
+  const destination = path.join(directory, name);
+  const names = await readdir(directory);
+  const existing = names.find(entry => entry.toLowerCase() === name.toLowerCase());
+  if (existing && existing !== name) throw new Error('An existing project uses different capitalization. Use its exact name.');
+  if (replace) {
+    if (!existing) throw new Error('This project does not exist yet. Omit --replace to create it.');
+    await replaceProject(staging, destination, project, filename);
+  } else {
+    if (existing) throw new Error(project ? 'This project already exists. Use --replace to publish a new report at its address.' : 'The generated address already exists. Run the command again.');
+    await rename(staging, destination);
+  }
+}
+
+async function seal({ filename, project, replace }) {
+  const html = await readDeck(filename);
+  const directory = await outputDirectory(project ? 'GroupMeeting' : 'slides');
+  const id = randomBytes(16).toString('hex');
+  const { passcode, payload } = encrypt(html, id);
+  const payloadName = project ? `deck-${id}.bin` : 'deck.bin';
+  const lock = project && path.join(repository, `.seal-lock-${project.toLowerCase()}`);
+  if (lock) {
+    try {
+      await mkdir(lock);
+    } catch (error) {
+      if (error.code === 'EEXIST') throw new Error('Another packager holds this project lock: ' + lock);
+      throw error;
+    }
+  }
+  const url = project ? `/GroupMeeting/${project}/` : `/slides/${id}/`;
+  let staging;
+  try {
+    staging = await mkdtemp(path.join(repository, '.seal-'));
+    await writeFile(path.join(staging, payloadName), payload, { flag: 'wx' });
+    await writeFile(path.join(staging, 'index.md'), manifest(project, id), { flag: 'wx' });
+    await publish(staging, directory, project, id, replace, payloadName);
+    // Once the new manifest is live, output its code even if housekeeping later fails.
+    console.log(`https://bixingwu.com${url}#p=${passcode.match(/.{4}/g).join('-')}`);
+    if (replace) {
+      const bundle = path.join(directory, project);
+      for (const entry of await readdir(bundle, { withFileTypes: true })) {
+        if (entry.isFile() && entry.name !== payloadName && /^deck-[0-9a-f]{32}\.bin$/.test(entry.name)) {
+          await unlink(path.join(bundle, entry.name));
+        }
+      }
+    }
+  } finally {
+    try {
+      if (staging) await rm(staging, { recursive: true, force: true });
+    } finally {
+      if (lock) await rmdir(lock);
+    }
+  }
+}
+
+function options(args) {
+  const usage = 'Usage: node tools/seal-slides.mjs [--project Ocula [--replace]] /path/outside/the/site/deck.html';
+  let filename, project, replace = false;
+  for (let i = 0; i < args.length; i++) {
+    const arg = args[i];
+    if (arg === '--project' && project === undefined) {
+      project = args[++i] || '';
+      if (project.length > 64 || !/^[A-Za-z][A-Za-z0-9]*(?:-[A-Za-z0-9]+)*$/.test(project) ||
+          /^(?:con|prn|aux|nul|com[1-9]|lpt[1-9])$/i.test(project)) {
+        throw new Error('Choose a project name of 1–64 ASCII letters, digits, or internal hyphens, starting with a letter.');
+      }
+    } else if (arg === '--replace' && !replace) replace = true;
+    else if (arg.startsWith('-') || filename) throw new Error(usage);
+    else filename = arg;
+  }
+  if (!filename || (replace && !project)) throw new Error(usage);
+  return { filename, project, replace };
 }
 
 try {
-  const args = process.argv.slice(2);
-  if (args.length !== 1) throw new Error('Usage: node tools/seal-slides.mjs /path/outside/the/site/deck.html');
-  console.log(await seal(args[0]));
+  await seal(options(process.argv.slice(2)));
 } catch (error) {
   console.error(error.message);
   process.exitCode = 1;
