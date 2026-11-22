@@ -33,6 +33,7 @@
     <symbol id="mail" viewBox="0 0 24 24"><rect x="3" y="5.5" width="18" height="13" rx="2.5"/><path d="m4 7 8 6 8-6"/></symbol>
     <symbol id="scholar" viewBox="0 0 24 24"><path d="m2 9 10-5 10 5-10 5-10-5zm4 2.2v5c3.4 3.4 8.6 3.4 12 0v-5M22 9v6"/></symbol>
     <symbol id="code" viewBox="0 0 24 24"><path d="m7 7-5 5 5 5m10-10 5 5-5 5m-4-12-2 14"/></symbol>
+    <symbol id="forward" viewBox="0 0 24 24"><path d="M4 12h15m-6-6 6 6-6 6"/></symbol>
   </svg>
   <header class="site-bar">
     <div class="wrap bar-inner">
@@ -113,7 +114,7 @@
             <figcaption class="venue">{{ .venue }}</figcaption>
             <a href="{{ .figure }}" class="figure-link" data-paper="{{ .short_name }}" data-source="{{ .figure_source }}" aria-label="Open full-size {{ .short_name }} pipeline" aria-describedby="{{ $titleID }}-figure">
               <img class="paper-figure" id="{{ $titleID }}-figure" src="{{ $preview }}"
-                   {{ with $sources }}srcset="{{ delimit . ", " }}" sizes="auto, (max-width: 27rem) 92vw, (max-width: 32rem) 37vw, (max-width: 54rem) clamp(13rem, 35vw, 17rem), min(29vw, 19rem)"{{ end }}
+                   {{ with $sources }}srcset="{{ delimit . ", " }}" sizes="auto, (max-width: 36rem) 92vw, (max-width: 54rem) clamp(13rem, 35vw, 17rem), min(29vw, 21.5rem)"{{ end }}
                    width="{{ $width }}" height="{{ $height }}" loading="lazy" decoding="async" alt="{{ .figure_alt }}">
               <svg class="icon enlarge" aria-hidden="true"><use href="#enlarge"/></svg>
             </a>
@@ -122,15 +123,18 @@
             <p class="authors">
               {{- $last := sub (len .authors) 1 -}}
               {{- range $i, $author := .authors -}}
-                {{- if strings.HasSuffix $author "*" }}{{ $hasEqualContribution = true }}{{ end -}}
-                <span class="author">{{ if eq (strings.TrimSuffix "*" $author) $.Title }}<strong>{{ $author }}</strong>{{ else }}{{ $author }}{{ end }}{{ if lt $i $last }},{{ end }}</span>{{ if lt $i $last }} {{ end -}}
+                {{- $equal := strings.HasSuffix $author "*" -}}
+                {{- $name := strings.TrimSuffix "*" $author -}}
+                {{- if $equal }}{{ $hasEqualContribution = true }}{{ end -}}
+                <span class="author">{{ if eq $name $.Title }}<strong>{{ $name }}</strong>{{ else }}{{ $name }}{{ end }}{{ if $equal }}<sup>*</sup>{{ end }}{{ if lt $i $last }},{{ end }}</span>{{ if lt $i $last }} {{ end -}}
               {{- end -}}
             </p>
             <div class="resources" role="group" aria-label="Resources for {{ .short_name }}">
-              {{ with $webPaper }}<a href="{{ .RelPermalink }}">Web</a>{{ end }}
-              {{ with .pdf }}<a href="{{ . }}">{{ if $webPaper }}PDF{{ else }}Paper{{ end }}</a>{{ end }}
-              {{ with .code }}<a href="{{ . }}">Code</a>{{ end }}
-              {{ with .bibtex }}<a href="{{ . }}" download>BibTeX</a>{{ end }}
+              {{ with $webPaper }}<a class="read-paper" href="{{ .RelPermalink }}" aria-label="Read {{ $webPaper.Title }} online">Read paper<svg class="icon" aria-hidden="true"><use href="#forward"/></svg></a>{{ end }}
+              {{ $name := .short_name }}
+              {{ with .pdf }}<a href="{{ . }}" aria-label="Read the {{ $name }} PDF">{{ if $webPaper }}PDF{{ else }}Paper{{ end }}</a>{{ end }}
+              {{ with .code }}<a href="{{ . }}" aria-label="{{ $name }} source code">Code</a>{{ end }}
+              {{ with .bibtex }}<a href="{{ . }}" download aria-label="Download the {{ $name }} BibTeX citation">BibTeX</a>{{ end }}
             </div>
           </div>
         </article>

@@ -26,11 +26,64 @@
   const contents = document.getElementById("paper-contents");
   if (contents) {
     const narrow = matchMedia("(max-width: 54rem)");
-    const setContents = () => { contents.open = !narrow.matches; };
+    const summary = contents.querySelector("summary");
+    const locationLabel = summary.querySelector(".contents-location");
+    const sections = [...contents.querySelectorAll('a[href^="#"]')].map(link => ({
+      link, target: document.getElementById(decodeURIComponent(link.hash.slice(1))),
+    })).filter(section => section.target);
+    let current;
+    let pending = 0;
+    function locateSection() {
+      pending = 0;
+      const line = narrow.matches ? summary.offsetHeight + 24 : 64;
+      let next;
+      for (const section of sections) {
+        if (!section.target.getClientRects().length) continue;
+        if (section.target.getBoundingClientRect().top > line) break;
+        next = section;
+      }
+      if (window.scrollY + root.clientHeight >= root.scrollHeight - 2) next = sections.at(-1);
+      if (current === next) return;
+      current?.link.removeAttribute("aria-current");
+      next?.link.setAttribute("aria-current", "location");
+      if (locationLabel) locationLabel.textContent = next?.link.textContent.trim() || "";
+      current = next;
+    }
+    function queueLocation() {
+      if (!pending) pending = requestAnimationFrame(locateSection);
+    }
+    const setContents = () => { contents.open = !narrow.matches; queueLocation(); };
+    contents.classList.add("interactive-contents");
     setContents();
     narrow.addEventListener("change", setContents);
+    window.addEventListener("scroll", queueLocation, { passive: true });
+    window.addEventListener("resize", queueLocation);
+    window.addEventListener("pageshow", queueLocation);
+    paper.addEventListener("toggle", queueLocation, true);
+    contents.addEventListener("toggle", () => {
+      if (!narrow.matches || !contents.open || !current) return;
+      const group = current.link.closest(".contents-appendices");
+      if (group) group.open = true;
+      const list = contents.querySelector("ol");
+      const linkTop = current.link.getBoundingClientRect().top - list.getBoundingClientRect().top;
+      if (linkTop < 0 || linkTop + current.link.offsetHeight > list.clientHeight) {
+        list.scrollTop += linkTop - (list.clientHeight - current.link.offsetHeight) / 2;
+      }
+    });
     contents.addEventListener("click", event => {
       if (narrow.matches && ordinaryClick(event) && event.target.closest('a[href^="#"]')) contents.open = false;
+    });
+    document.addEventListener("pointerdown", event => {
+      if (narrow.matches && contents.open && !contents.contains(event.target)) contents.open = false;
+    });
+    document.addEventListener("focusin", event => {
+      if (narrow.matches && contents.open && !contents.contains(event.target)) contents.open = false;
+    });
+    contents.addEventListener("keydown", event => {
+      if (event.key === "Escape" && narrow.matches && contents.open) {
+        contents.open = false;
+        summary.focus();
+      }
     });
   }
 
@@ -141,6 +194,27 @@
   if (!image || !close || typeof dialog.showModal !== "function") return;
   const caption = dialog.querySelector("[data-figure-caption]");
   const original = dialog.querySelector("[data-original-figure]");
+  const zoom = dialog.querySelector("[data-zoom-figure]");
+  const stage = document.getElementById("reader-figure-stage");
+  function fitFigure() {
+    if (!stage || !zoom) return;
+    stage.removeAttribute("tabindex");
+    stage.removeAttribute("data-enlarged");
+    image.style.removeProperty("width");
+    stage.scrollTo(0, 0);
+    zoom.textContent = "Zoom in";
+  }
+  if (stage && zoom) {
+    zoom.addEventListener("click", () => {
+      if (stage.hasAttribute("data-enlarged")) { fitFigure(); return; }
+      const width = image.getBoundingClientRect().width;
+      if (!width) return;
+      image.style.width = Math.ceil(width * 2) + "px";
+      stage.setAttribute("data-enlarged", "");
+      stage.tabIndex = 0;
+      zoom.textContent = "Fit image";
+    });
+  }
   let opener;
   const article = paper.closest(".reader-article") || paper;
   article.addEventListener("click", event => {
@@ -151,7 +225,12 @@
     image.alt = link.querySelector("img")?.alt || "Enlarged figure";
     image.src = link.href;
     if (original) original.href = link.href;
-    if (caption) caption.textContent = link.closest("figure")?.querySelector("figcaption")?.textContent.trim() || "";
+    const figure = link.closest("figure");
+    if (caption) {
+      const selector = figure?.classList.contains("overview-figure") ? "figcaption > span" : "figcaption";
+      caption.textContent = figure?.querySelector(selector)?.textContent.trim() || "";
+    }
+    fitFigure();
     dialog.showModal();
     close.focus({ preventScroll: true });
   });

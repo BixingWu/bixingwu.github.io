@@ -1,7 +1,9 @@
 {{ define "main" }}
-<main class="gate-card">
-  <a class="gate-home" href="{{ site.Home.RelPermalink }}">{{ site.Title }}</a>
+<main id="main" class="directory-width directory-main" tabindex="-1">
   <h1>{{ .Title }}</h1>
   <p>Open the private link shared by the presenter to view a slide deck.</p>
+  {{ with site.GetPage "/GroupMeeting" }}
+    <a class="meeting-browse" href="{{ .RelPermalink }}">Browse group meetings<svg class="icon" aria-hidden="true"><use href="#forward"/></svg></a>
+  {{ end }}
 </main>
 {{ end }}

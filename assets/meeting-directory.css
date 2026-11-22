@@ -1,16 +1,24 @@
-.meeting-directory {
+.meeting-directory, .meeting-access:not(.mn-host) {
   min-height: 100vh;
+  min-height: 100svh;
   background:
-    radial-gradient(ellipse 46rem 14rem at 92% 0, color-mix(in srgb, var(--apricot) 17%, transparent), transparent),
-    linear-gradient(178deg, color-mix(in srgb, var(--sky) 45%, var(--page)), var(--page) 19rem);
+    radial-gradient(ellipse 43rem 16rem at 92% -3rem, color-mix(in srgb, var(--apricot) 14%, transparent), transparent),
+    linear-gradient(174deg, color-mix(in srgb, var(--sky) 54%, var(--page)), var(--page) 23rem);
 }
 .directory-width {
   width: min(52rem, calc(100% - 2 * var(--edge)));
   margin-inline: auto;
 }
-.directory-bar { border-bottom: 1px solid var(--rule); }
-.directory-bar .home-link { display: inline-flex; }
-.directory-bar > div {
+.meeting-bar { border-bottom: 1px solid var(--rule); }
+.meeting-bar .home-link, .meeting-back, .meeting-browse { display: inline-flex; align-items: center; }
+.meeting-back, .meeting-browse {
+  min-height: 2.75rem; gap: .35rem;
+  color: var(--blue); text-decoration: none; font-size: .95rem; font-weight: 550;
+}
+.meeting-back .icon { width: .85rem; transform: rotate(180deg); }
+.meeting-browse { margin-top: .45rem; }
+.meeting-browse .icon { width: .85rem; }
+.meeting-bar > div {
   display: flex;
   min-height: 3.55rem;
   padding-top: env(safe-area-inset-top);
@@ -31,14 +39,16 @@
   display: flex;
   align-items: center;
   gap: clamp(.6rem, 1.6vw, 1rem);
-  padding: 1.05rem .15rem;
+  min-height: 4.2rem;
+  padding: .95rem .2rem;
   color: var(--ink);
   text-decoration: none;
 }
 .meeting-project:is(:hover, :focus-visible) { color: var(--blue); text-decoration: none; }
 .project-name { margin-inline-end: auto; min-width: 0; overflow-wrap: anywhere; font: 580 clamp(1.15rem, 2vw, 1.4rem)/1.25 var(--display-face); letter-spacing: -.02em; }
+.meeting-project:focus-visible { outline-offset: -2px; }
 .meeting-project:is(:hover, :focus-visible) .project-name { text-decoration: underline; }
-.project-access { display: inline-flex; align-items: center; gap: .35rem; color: var(--quiet); font-size: .82rem; }
+.project-access { display: inline-flex; align-items: center; gap: .35rem; color: var(--quiet); font-size: .85rem; white-space: nowrap; }
 .project-access .icon { width: .85rem; height: .85rem; }
 .project-chevron { flex: none; width: .86rem; height: .86rem; color: var(--blue); }
 @media (prefers-reduced-motion: no-preference) {

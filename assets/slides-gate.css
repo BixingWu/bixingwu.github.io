@@ -1,14 +1,10 @@
-.meeting-access { min-height: 100dvh; display: grid; place-items: center; }
-.meeting-access:not(.mn-host) {
-  background: linear-gradient(166deg, color-mix(in srgb, var(--sky) 35%, var(--page)), var(--page) 32rem);
-}
 body.mn-host { color-scheme: light; color: #171717; background: #fff; }
+body.mn-host .meeting-bar, .meeting-access:has(#gate-heading[hidden]) .meeting-bar { display: none; }
+.meeting-bar #theme-toggle { margin: 0; background: transparent; }
+.meeting-bar #theme-toggle:hover { background: color-mix(in srgb, currentColor 10%, transparent); }
 [hidden] { display: none !important; }
-.gate-card { width: min(calc(100vw - 2 * var(--edge)), 25rem); margin: 1rem auto; }
-.gate-home { display: inline-flex; align-items: center; gap: .2rem; min-height: 2.75rem; color: var(--blue); font-size: .9rem; font-weight: 550; text-decoration: none; }
-.gate-home .icon { width: .85rem; height: .85rem; }
-.gate-home:hover { text-decoration: underline; }
-.gate-card h1 { margin: .4rem 0 clamp(1.3rem, 4vw, 2rem); font-size: clamp(2.6rem, 6vw, 3.5rem); line-height: 1.07; letter-spacing: -.045em; overflow-wrap: anywhere; }
+.gate-card { width: min(calc(100% - 2 * var(--edge)), 25rem); margin-inline: auto; padding-block: clamp(2.6rem, 15svh, 8.5rem) 2rem; }
+.gate-card h1 { margin: 0 0 clamp(1.45rem, 4vw, 2.2rem); font-size: clamp(2.6rem, 6vw, 3.5rem); line-height: 1.07; letter-spacing: -.045em; overflow-wrap: anywhere; }
 .gate-card p, noscript { color: var(--quiet); }
 form { display: grid; gap: .55rem; }
 label { font-size: .9rem; font-weight: 550; }
@@ -17,15 +13,16 @@ input { width: 100%; border: 1px solid #a6a9ad; background: #fff; color: inherit
 button { margin-top: .2rem; border: none; background: #1c4587; color: #fff; font-weight: 600; cursor: pointer; }
 button:disabled { opacity: .65; cursor: wait; }
 :focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; }
-#access-key { border-color: color-mix(in srgb, var(--quiet) 72%, var(--page)); background: var(--page); color: var(--ink); }
+#access-key { border-color: color-mix(in srgb, var(--quiet) 68%, var(--page)); background: var(--page); color: var(--ink); border-radius: .65rem; }
 #access-key::placeholder { color: var(--quiet); opacity: .86; }
+#access-key:focus-visible { border-color: var(--blue); outline-offset: 2px; }
+.gate-message { min-height: 2.9em; font-size: .88rem; }
 #access-help, #unlock-status, .gate-card noscript { font-size: .88rem; line-height: 1.45; }
-#unlock-slides { margin-top: .65rem; background: var(--blue); color: var(--page); }
+#unlock-slides { margin: 0; border-radius: .65rem; background: var(--blue); color: var(--page); }
 #unlock-slides:hover:enabled { background: color-mix(in srgb, var(--blue) 80%, var(--ink)); }
-#unlock-status { margin-top: .75rem; }
+#unlock-status:not(:empty) + #access-help { display: none; }
 #access-key[aria-invalid="true"] { border-color: var(--sun); }
 #gate-heading:has([aria-invalid="true"]) #unlock-status { color: var(--sun); }
-#unlock-status:empty { display: none; }
 #slide-viewer { display: block; width: 100vw; height: 100dvh; border: 0; }
 
 #slide-footer { display: none; }

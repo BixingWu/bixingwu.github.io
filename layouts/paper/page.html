@@ -44,7 +44,7 @@
   <div class="reader-layout">
     <aside class="reader-aside" aria-label="Paper contents">
       <details id="paper-contents" open>
-        <summary>Contents</summary>
+        <summary>Contents<span class="contents-location" aria-hidden="true"></span></summary>
         <ol>
           {{ $appendices := slice }}
           {{ range $contents }}
@@ -86,7 +86,12 @@
   </div>
 </main>
 <dialog id="reader-figure" aria-label="Enlarged paper figure">
-  <div class="zoom-tools"><a data-original-figure>Original image</a><button type="button" data-close-figure>Close</button></div>
-  <img alt=""><p data-figure-caption></p>
+  <div class="zoom-tools">
+    <button type="button" data-zoom-figure aria-controls="reader-figure-stage">Zoom in</button>
+    <a data-original-figure>Original image</a>
+    <button type="button" data-close-figure>Close</button>
+  </div>
+  <div id="reader-figure-stage" role="region" aria-label="Paper figure"><img alt=""></div>
+  <p data-figure-caption></p>
 </dialog>
 {{ end }}

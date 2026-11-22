@@ -188,23 +188,28 @@ if (dialog && typeof dialog.showModal === "function") {
   let closing = false;
   let pressedBackdrop = false;
 
+  function bitmapBounds(img) {
+    const box = img.getBoundingClientRect();
+    const ratio = Number(img.getAttribute("width")) / Number(img.getAttribute("height"));
+    if (!Number.isFinite(ratio) || ratio <= 0) return box;
+    const width = Math.min(box.width, box.height * ratio);
+    const height = width / ratio;
+    return { width, height, left: box.left + (box.width - width) / 2, top: box.top + (box.height - height) / 2 };
+  }
+
   function animateFigure(thumb, returning = false) {
     if (reducedMotion.matches || typeof dialog.animate !== "function") return null;
     const frame = dialog.getBoundingClientRect();
-    const full = image.getBoundingClientRect();
+    const full = bitmapBounds(image);
     if (!thumb.width || !thumb.height || !full.width || !full.height) return null;
-    // Use the painted bitmap inside object-fit: contain, excluding toolbar and padding.
-    const ratio = thumb.width / thumb.height;
-    const width = Math.min(full.width, full.height * ratio);
-    const height = width / ratio;
-    const left = full.left - frame.left + (full.width - width) / 2;
-    const top = full.top - frame.top + (full.height - height) / 2;
-    const scale = thumb.width / width;
+    const left = full.left - frame.left;
+    const top = full.top - frame.top;
+    const scale = thumb.width / full.width;
     const x = thumb.left - frame.left - left * scale;
     const y = thumb.top - frame.top - top * scale;
     const small = {
       transform: `translate(${x}px, ${y}px) scale(${scale})`,
-      clipPath: `inset(${top}px ${frame.width - left - width}px ${frame.height - top - height}px ${left}px)`,
+      clipPath: `inset(${top}px ${frame.width - left - full.width}px ${frame.height - top - full.height}px ${left}px)`,
       opacity: 0
     };
     // Allow the panel shadow to appear as its frame opens around the figure.
@@ -243,7 +248,7 @@ if (dialog && typeof dialog.showModal === "function") {
       }
       motion.reverse();
     } else {
-      motion = animateFigure(opener.querySelector("img").getBoundingClientRect(), true);
+      motion = animateFigure(bitmapBounds(opener.querySelector("img")), true);
     }
     if (motion) motion.onfinish = () => dialog.close();
     else dialog.close();
@@ -259,7 +264,7 @@ if (dialog && typeof dialog.showModal === "function") {
       closing = false;
       dialog.removeAttribute("data-closing");
       const thumbnail = link.querySelector("img");
-      const thumb = thumbnail.getBoundingClientRect();
+      const thumb = bitmapBounds(thumbnail);
       image.width = Number(thumbnail.getAttribute("width")) || thumbnail.naturalWidth;
       image.height = Number(thumbnail.getAttribute("height")) || thumbnail.naturalHeight;
       original.style.backgroundImage = `url("${thumbnail.currentSrc || thumbnail.src}")`;

@@ -41,6 +41,9 @@
 #paper-contents .contents-appendices ul { list-style: none; margin: .15rem 0 .25rem; padding: 0 0 0 .68rem; border-left: 1px solid var(--rule); }
 #paper-contents li a { display: block; padding: .25rem 0; line-height: 1.35; font-size: .82rem; text-decoration: none; color: var(--quiet); overflow-wrap: anywhere; }
 #paper-contents li a:is(:hover,:focus-visible) { color: var(--blue); text-decoration: underline; }
+#paper-contents li a[aria-current="location"],
+#paper-contents .contents-appendices:has(a[aria-current="location"]) > summary { color: var(--blue); font-weight: 650; }
+.contents-location { display: none; }
 .reader-article { grid-area: article; min-width: 0; }
 .overview-figure { margin: 0 0 clamp(2rem, 4vw, 3.1rem); }
 .overview-figure > a { display: block; background: #fff; border: 1px solid var(--rule); border-radius: .35rem; padding: clamp(.45rem, 1.6vw, 1rem); cursor: zoom-in; }
@@ -64,8 +67,14 @@
 .reader-footer p a { display: inline; }
 #reader-figure { width: min(75rem, calc(100vw - 2rem)); max-height: calc(100dvh - 2rem); padding: .85rem 1.1rem; background: var(--page); color: var(--ink); border: 1px solid var(--rule); border-radius: .6rem; overflow: auto; }
 #reader-figure::backdrop { background: light-dark(#1b304770, #071321ae); }
-.zoom-tools { justify-content: space-between; margin-bottom: .4rem; }
-#reader-figure img { display: block; width: 100%; height: auto; max-height: 70dvh; object-fit: contain; background: #fff; }
+:root:has(#reader-figure[open]) { overflow: hidden; }
+.zoom-tools { position: sticky; inset-block-start: -.85rem; z-index: 1; margin-bottom: .5rem; background: var(--page); }
+.zoom-tools > a { margin-inline-start: auto; }
+.zoom-tools button { min-height: 2.75rem; padding-inline: .75rem; text-decoration: none; border-radius: .4rem; color: var(--ink); }
+.zoom-tools button:is(:hover,:focus-visible), .zoom-tools [data-close-figure] { background: var(--surface); }
+#reader-figure-stage { overflow: auto; overscroll-behavior: contain; max-height: 65dvh; background: #fff; }
+#reader-figure img { display: block; width: auto; max-width: 100%; height: auto; max-height: 65dvh; margin-inline: auto; }
+#reader-figure-stage[data-enlarged] img { max-width: none; max-height: none; }
 #reader-figure [data-figure-caption] { font-size: .85rem; color: var(--quiet); margin: .75rem 0 .15rem; }
 .papers-index { padding-block: clamp(2.5rem, 6vw, 5rem); }
 .papers-index h1 { font-size: clamp(2.6rem, 5vw, 4.3rem); margin-bottom: 1.6rem; }
@@ -81,9 +90,24 @@
   .reader-layout { display: flex; flex-direction: column; gap: 1.3rem; }
   .reader-aside, .reader-article { width: 100%; }
   .reader-aside { position: static; }
+  .reader-aside:has(.interactive-contents) { position: sticky; top: 0; z-index: 3; }
   #paper-contents { border-bottom: 1px solid var(--rule); }
   #paper-contents ol { max-height: 47dvh; }
-  #paper-contents li a { padding: .4rem .75rem; }
+  #paper-contents.interactive-contents { position: relative; background: var(--page); }
+  .interactive-contents > summary { position: relative; min-height: 2.75rem; }
+  .interactive-contents:not([open]) .contents-location {
+    position: absolute; inset-inline: 6rem .2rem; top: 50%; transform: translateY(-50%);
+    display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: end;
+    color: var(--quiet); font-size: .8rem; font-weight: 450;
+  }
+  #paper-contents.interactive-contents[open] > ol {
+    position: absolute; inset-inline: 0; top: 100%; padding: .25rem .25rem .5rem; background: var(--page);
+    border: 1px solid var(--rule); border-radius: 0 0 .55rem .55rem;
+    box-shadow: 0 .65rem 1.5rem color-mix(in srgb, var(--ink) 9%, transparent);
+    overscroll-behavior: contain;
+  }
+  .reader:has(.interactive-contents) :is(.paper-body [id], #cite) { scroll-margin-top: 3.9rem; }
+  #paper-contents li a, #paper-contents .contents-appendices summary { min-height: 2.5rem; padding: .65rem .75rem; }
   .paper-body a.paragraph-link { left: calc(0px - var(--paper-inset) + .05rem); width: calc(var(--paper-inset) - .15rem); }
 }
 @media (max-width: 32rem) {
@@ -95,6 +119,7 @@
   .index-paper { grid-template-columns: 1fr; gap: .9rem; }
   .index-figure { max-width: 23rem; }
   #reader-figure { width: calc(100vw - 1rem); padding: .6rem; }
+  .zoom-tools { gap: .55rem; inset-block-start: -.6rem; }
 }
 @media print {
   .reader-bar, .reader-aside, .paragraph-link, .cite-tools, .reader-footer, #reader-figure { display: none !important; }

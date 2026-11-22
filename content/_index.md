@@ -25,7 +25,7 @@ params:
       figure: assets/aha.png
       figure_width: 1994
       figure_height: 928
-      figure_source: "https://arxiv.org/html/2602.03570v2#S3.F2"
+      figure_source: "/paper/aha/#S3.F2"
       figure_alt: AHA architecture showing audio and video encoders, the shared semantic anchor, local sliding alignment, and the gradient-reversal adversarial decoupler.
       url: https://arxiv.org/abs/2602.03570
       pdf: https://arxiv.org/pdf/2602.03570
@@ -49,7 +49,7 @@ params:
       figure: assets/huper.png
       figure_width: 2000
       figure_height: 762
-      figure_source: "https://arxiv.org/html/2602.01634v2#S1.F2"
+      figure_source: "/paper/huper/#S1.F2"
       figure_alt: HuPER's speech encoder and decoder feed a scheduler that selects a route for prompted reading, spontaneous speech, or less intelligible speech.
       url: https://arxiv.org/abs/2602.01634
       pdf: https://arxiv.org/pdf/2602.01634

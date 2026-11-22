@@ -1,4 +1,3 @@
-{{- $directory := eq .Layout "meeting-directory" -}}
 <!doctype html>
 <html lang="{{ site.Language.Lang }}">
 <head>
@@ -16,10 +15,9 @@
   <title>{{ default .Title .Params.project }} · {{ site.Title }}</title>
   <link rel="icon" href="{{ "assets/icon.png" | relURL }}" type="image/png">
   {{ with resources.Get "style.css" | fingerprint }}<link rel="stylesheet" href="{{ .RelPermalink }}">{{ end }}
-  {{ if $directory }}
-    {{ with resources.Get "assets/meeting-directory.css" | fingerprint }}<link rel="stylesheet" href="{{ .RelPermalink }}">{{ end }}
-    {{ with resources.Get "assets/paper-reader.js" | fingerprint }}<script src="{{ .RelPermalink }}" defer></script>{{ end }}
-  {{ else }}
+  {{ with resources.Get "assets/meeting-directory.css" | fingerprint }}<link rel="stylesheet" href="{{ .RelPermalink }}">{{ end }}
+  {{ with resources.Get "assets/paper-reader.js" | fingerprint }}<script src="{{ .RelPermalink }}" defer></script>{{ end }}
+  {{ if .IsPage }}
     {{ with resources.Get "assets/slides-gate.css" | fingerprint }}<link rel="stylesheet" href="{{ .RelPermalink }}">{{ end }}
   {{ end }}
   {{ if .IsPage }}
@@ -33,7 +31,24 @@
     {{ with resources.Get "assets/slides-gate.js" | fingerprint }}<script src="{{ .RelPermalink }}" defer></script>{{ end }}
   {{ end }}
 </head>
-<body class="{{ if $directory }}meeting-directory{{ else }}meeting-access{{ end }}">
+<body class="{{ if .IsPage }}meeting-access{{ else }}meeting-directory{{ end }}">
+  {{ if .IsSection }}<a class="skip" href="#main">Skip to content</a>{{ end }}
+  <svg class="symbols" aria-hidden="true">
+    <symbol id="moon" viewBox="0 0 24 24"><path d="M20.5 15.1A8.6 8.6 0 0 1 8.9 3.5a8.7 8.7 0 1 0 11.6 11.6z"/></symbol>
+    <symbol id="sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"/></symbol>
+    <symbol id="lock" viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></symbol>
+    <symbol id="forward" viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></symbol>
+  </svg>
+  <header class="meeting-bar">
+    <div class="directory-width">
+      {{ if and .IsPage .Params.project }}
+        <a class="meeting-back" href="{{ .Parent.RelPermalink }}"><svg class="icon" aria-hidden="true"><use href="#forward"/></svg>{{ .Parent.Title }}</a>
+      {{ else }}
+        <a class="home-link" href="{{ site.Home.RelPermalink }}">{{ site.Title }}</a>
+      {{ end }}
+      <button id="theme-toggle" type="button" hidden aria-label="Switch appearance" title="Switch appearance"><svg class="icon" aria-hidden="true"><use href="#moon"/></svg></button>
+    </div>
+  </header>
   {{ block "main" . }}{{ end }}
 </body>
 </html>
