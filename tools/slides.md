@@ -6,7 +6,25 @@
 
 在网站仓库外保存本场材料。可以把几页写在同一 HTML 文件，也可以用 `slides/01-method.html`、`slides/02-result.html` 这样的文件名编排。每页是一个 `<section class="slide">`。正文题名写在 `h1` 或 `h2` 中，侧栏默认沿用该题名，需要短名称时加 `data-slide-title`。看[可编辑的 HuPER 示例](meeting/huper-example.html)可以直接找到方法图、双图和表格的写法。
 
-从网站仓库运行下面的命令。输入目录中的 `.html` 按文件名排序。输出放在源页目录外，后续增加或修改某一页可以重复使用同一命令。
+对于会继续编辑的报告，Agent 在私有目录保存一份 `meeting.json`。其中列出本场实际用到的 HTML 及顺序。旧草稿可以留在目录里。相对路径以清单所在目录为起点。例如：
+
+```json
+{
+  "title": "Research meeting",
+  "slides": ["cover.html", "method.html", "results.html"],
+  "output": "report.html"
+}
+```
+
+从网站仓库构建本地预览：
+
+```sh
+python3 "tools/meeting/build_deck.py" --project "/private/work/Ocula/meeting.json"
+```
+
+有本场专用样式或交互时，可在清单中加 `css` 或 `js` 路径。只改文案、图或实验值时，编辑对应 HTML 或媒体并重复运行同一条命令。新增页或调整顺序时，更新清单。项目构建会检查每页的笔记编号。若出现冲突，报错会指出两页的位置，供 Agent 在发布前修正。
+
+临时报告也可以直接指定材料。输入目录中的 `.html` 按文件名排序，输出放在源页目录外。
 
 ```sh
 python3 "tools/meeting/build_deck.py" --title "Ocula · Research meeting" \

@@ -135,7 +135,21 @@ class Slides(HTMLParser):
             self.depth = max(0, self.depth - 1)
 
 
-def assemble(template, slides, title, css="", script=""):
+def validate_note_pages(openings):
+    owners = {}
+    for number, (_, _, attrs) in enumerate(openings, start=1):
+        raw = next((value for name, value in attrs if name == "data-note-page"), str(number))
+        digits = (raw or "").strip().lstrip("0")
+        if not re.fullmatch(r"[0-9]{1,16}", digits) or int(digits) > 2**53 - 1:
+            raise ValueError(f"Slide {number}: data-note-page must be a positive safe integer in decimal notation.")
+        slot = int(digits)
+        if slot in owners:
+            raise ValueError(f"Slides {owners[slot]} and {number} share notes slot {slot}. "
+                             "Keep the existing slide's slot and assign a new data-note-page to the other slide.")
+        owners[slot] = number
+
+
+def assemble(template, slides, title, css="", script="", *, check_note_pages=False):
     start = "<!-- deck-slides:start -->"
     end = "<!-- deck-slides:end -->"
     if template.count(start) != 1 or template.count(end) != 1:
@@ -144,6 +158,8 @@ def assemble(template, slides, title, css="", script=""):
     parsed.feed(slides)
     if not parsed.openings:
         raise ValueError('The content needs at least one <section class="slide">')
+    if check_note_pages:
+        validate_note_pages(parsed.openings)
     if re.search(r"</style\s*>", css, re.I) or re.search(r"</script\s*>", script, re.I):
         raise ValueError("Supply plain CSS or JavaScript without closing HTML tags")
     head, rest = template.split(start)
@@ -191,11 +207,42 @@ def add_previews(page):
     return "".join(parts) + content[cursor:] + end + tail
 
 
+def read_project(path):
+    try:
+        project = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as error:
+        raise ValueError(f"{path}: invalid JSON on line {error.lineno}: {error.msg}") from error
+    if not isinstance(project, dict):
+        raise ValueError(f"{path}: expected a JSON object")
+    unknown = project.keys() - {"title", "slides", "output", "css", "js"}
+    if unknown:
+        raise ValueError(f"{path}: unknown field(s): {', '.join(sorted(unknown))}")
+    title = project.get("title")
+    slides = project.get("slides")
+    if not isinstance(title, str) or not title.strip():
+        raise ValueError(f"{path}: title must be a nonempty string")
+    if not isinstance(slides, list) or not slides:
+        raise ValueError(f"{path}: slides must be a nonempty list in presentation order")
+
+    def relative_path(value, field):
+        if not isinstance(value, str) or not value.strip() or Path(value).is_absolute():
+            raise ValueError(f"{path}: {field} must be a nonempty relative path")
+        return path.parent / value
+
+    return {
+        "title": title,
+        "slides": [relative_path(value, f"slides[{index}]") for index, value in enumerate(slides)],
+        "output": relative_path(project.get("output"), "output"),
+        **{name: relative_path(project[name], name) for name in ("css", "js") if name in project},
+    }
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--slides", required=True, type=Path, action="append", help="A slide fragment or a folder of *.html fragments sorted by filename; repeat in presentation order")
-    parser.add_argument("--title", required=True)
-    parser.add_argument("--output", required=True, type=Path)
+    parser.add_argument("--project", type=Path, help="Private JSON file with title, ordered slides, output and optional css/js; paths are relative to this file")
+    parser.add_argument("--slides", type=Path, action="append", help="A slide fragment or a folder of *.html fragments sorted by filename; repeat in presentation order")
+    parser.add_argument("--title")
+    parser.add_argument("--output", type=Path, help="Output HTML (overrides the project's output)")
     parser.add_argument("--css", type=Path)
     parser.add_argument("--js", type=Path)
     parser.add_argument("--no-previews", action="store_true", help="Use slide titles and page numbers without rendering thumbnails")
@@ -205,8 +252,19 @@ def main():
     if not template.is_file():
         template = tools / "assets" / "web-template.html"
     try:
+        if args.project:
+            if any(value is not None for value in (args.slides, args.title, args.css, args.js)):
+                parser.error("--project reads --slides, --title, --css and --js from the JSON file")
+            project = read_project(args.project)
+            args.title, args.slides = project["title"], project["slides"]
+            args.css, args.js = project.get("css"), project.get("js")
+            args.output = args.output or project["output"]
+            if args.output.suffix.lower() not in {".html", ".htm"}:
+                raise ValueError(f"{args.output}: the project output must be an HTML file")
+        elif args.title is None or not args.slides or args.output is None:
+            parser.error("supply --project, or all of --title, --slides and --output")
         parts = list(slide_files(args.slides))
-        inputs = [template, *parts, args.css, args.js]
+        inputs = [template, *parts, args.css, args.js, args.project]
         output_dir = args.output.resolve().parent
         if any(p and p.resolve() == args.output.resolve() for p in inputs) or any(
                 p.is_dir() and p.resolve() == output_dir for p in args.slides):
@@ -214,7 +272,8 @@ def main():
         sections = "\n".join(read_fragment(part) for part in parts)
         page = assemble(template.read_text(encoding="utf-8"), sections, args.title,
                         args.css.read_text(encoding="utf-8") if args.css else "",
-                        args.js.read_text(encoding="utf-8") if args.js else "")
+                        args.js.read_text(encoding="utf-8") if args.js else "",
+                        check_note_pages=args.project is not None)
         if not args.no_previews:
             page = add_previews(page)
         args.output.parent.mkdir(parents=True, exist_ok=True)
