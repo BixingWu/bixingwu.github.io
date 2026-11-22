@@ -1051,7 +1051,8 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
   const prefix = "bixing:slide-notes:v1:" + scope + ":";
   const drafts = new Map();
   const unsaved = new Set();
-  let current = 0;
+  const slides = gate ? [] : [...document.querySelectorAll("#slides > section.slide")];
+  let currentSlot = 0;
 
   function fitField() {
     if (nativeSizing || panel.hidden) return;
@@ -1070,30 +1071,33 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
     if (status.textContent !== text) status.textContent = text;
   }
   function save() {
-    if (!current) return;
+    if (!currentSlot) return;
     const value = field.value;
     fitField();
-    drafts.set(current, value);
+    drafts.set(currentSlot, value);
     try {
-      if (value) localStorage.setItem(prefix + current, value);
-      else localStorage.removeItem(prefix + current);
-      unsaved.delete(current);
+      if (value) localStorage.setItem(prefix + currentSlot, value);
+      else localStorage.removeItem(prefix + currentSlot);
+      unsaved.delete(currentSlot);
       feedback(value ? "Saved on this device" : "");
     } catch {
-      unsaved.add(current);
+      unsaved.add(currentSlot);
       feedback("Unsaved. Copy your note.", true);
     }
   }
-  function selectPage(number) {
-    if (!Number.isSafeInteger(number) || number < 1 || number === current) return;
+  function selectPage(number, notePage = slides[number - 1]?.dataset.notePage) {
+    if (!Number.isSafeInteger(number) || number < 1) return;
     if (gate && (!/^[0-9a-f]{32}$/.test(gate.dataset.id) || document.getElementById("slide-viewer").hidden || !document.getElementById("gate-heading").hidden)) return;
-    if (current && unsaved.has(current)) save();
-    current = number;
+    const mapped = Number(notePage);
+    const slot = Number.isSafeInteger(mapped) && mapped > 0 ? mapped : number;
     label.textContent = "Slide " + number + " notes";
-    let value = drafts.get(number) || "";
-    if (!unsaved.has(number)) {
+    if (slot === currentSlot) return;
+    if (currentSlot && unsaved.has(currentSlot)) save();
+    currentSlot = slot;
+    let value = drafts.get(slot) || "";
+    if (!unsaved.has(slot)) {
       try {
-        value = localStorage.getItem(prefix + number) || "";
+        value = localStorage.getItem(prefix + slot) || "";
         feedback(value ? "Saved on this device" : "");
       } catch {
         feedback("Local storage unavailable", true);
@@ -1101,7 +1105,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
     } else {
       feedback("Unsaved. Copy your note.", true);
     }
-    drafts.set(number, value);
+    drafts.set(slot, value);
     field.value = value;
     field.setSelectionRange(0, 0);
     panel.hidden = false;
@@ -1110,9 +1114,8 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
     document.body.classList.add(gate ? "mn-host" : "mn-standalone");
   }
 
-  document.addEventListener("bixing-notes:page", event => selectPage(event.detail?.slide));
+  document.addEventListener("bixing-notes:page", event => selectPage(event.detail?.slide, event.detail?.notePage));
   if (!gate) {
-    const slides = [...document.querySelectorAll("#slides > section.slide")];
     const index = slides.findIndex(slide => !slide.hidden);
     if (index >= 0) selectPage(index + 1);
   }
@@ -1134,9 +1137,9 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
   });
   if (!nativeSizing) window.addEventListener("resize", fitField);
   window.addEventListener("storage", event => {
-    if (!current || event.key !== prefix + current || unsaved.has(current)) return;
+    if (!currentSlot || event.key !== prefix + currentSlot || unsaved.has(currentSlot)) return;
     const value = event.newValue || "";
-    drafts.set(current, value);
+    drafts.set(currentSlot, value);
     if (document.activeElement !== field) {
       field.value = value;
       fitField();

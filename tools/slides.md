@@ -43,7 +43,7 @@ python3 "tools/meeting/build_deck.py" --title "HuPER · Paper discussion" \
 node tools/seal-slides.mjs --project Ocula "/private/work/report.html"
 ```
 
-**修订或续讲同一份报告**时，沿用原链接、口令和逐页备注。打包器先用保存的链接核验旧报告，然后原子替换密文。备注按页号对应，润色时请保留原页序。续讲时把新证据页排到末尾。
+**修订或续讲同一份报告**时，沿用原链接、口令和逐页备注。打包器先用保存的链接核验旧报告，然后原子替换密文。备注默认按页号保存。需要插页或重排时，让移动的旧页沿用原笔记编号，例如把原第 4 页移到第 6 页时，在其 `section` 上写 `data-note-page="4"`。新页选用这场报告历次版本中都未用过的正整数。每页的笔记编号必须唯一，页脚仍显示实际页码。
 
 ```sh
 node tools/seal-slides.mjs --project Ocula --revise-with "/private/work/private-link.txt" "/private/work/report.html"

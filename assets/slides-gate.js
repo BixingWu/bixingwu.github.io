@@ -29,6 +29,7 @@
   let pending;
   let accessCode = "";
   let viewerReady = false;
+  let notePages = [];
   let feedbackTimer;
   const footer = document.getElementById("slide-footer");
   const nav = footer.querySelector(".deck-tools");
@@ -118,7 +119,14 @@
     selectNotesPage(number);
   }
   function selectNotesPage(number) {
-    document.dispatchEvent(new CustomEvent("bixing-notes:page", { detail: { slide: number } }));
+    document.dispatchEvent(new CustomEvent("bixing-notes:page", { detail: { slide: number, notePage: notePages[number - 1] } }));
+  }
+  function readNotePages(html) {
+    if (!/\bdata-note-page\s*=/i.test(html)) return [];
+    // A template stays inert while the host reads each slide's stable notes slot.
+    const markup = document.createElement("template");
+    markup.innerHTML = html;
+    return Array.from(markup.content.querySelectorAll("#slides > section.slide"), slide => slide.dataset.notePage);
   }
   viewer.addEventListener("load", () => {
     if (!accessCode) return;
@@ -202,6 +210,7 @@
         try { plain = await decrypt(payload, code); } catch { continue; }
         if (pending !== request) return;
         const html = new TextDecoder().decode(plain);
+        notePages = readNotePages(html);
         // The policy must precede the author's markup. The outer doctype keeps standards mode.
         viewer.setAttribute("sandbox", "allow-scripts");
         viewer.referrerPolicy = "no-referrer";
